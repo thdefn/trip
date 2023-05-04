@@ -1,6 +1,9 @@
 # 개요
 네이버 밴드 같은 느낌의 여행 기록장
 
+# ERD
+https://www.erdcloud.com/d/v7bEz5NzwbPZzg7qK
+
 Use : Spring, Jpa, Mysql, Redis, Docker, GCP, QueryDsl
 Goal : QueryDsl을 활용해 쿼리 최적화에 신경써보기
 
