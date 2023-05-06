@@ -1,0 +1,10 @@
+### 회원가입
+POST http://localhost:8080/auth/signup
+Content-Type: application/json
+
+{
+  "username" : "thdefn",
+  "password" : "1234",
+  "nickname" : "daru",
+  "phone" : "01041230234"
+}
