@@ -15,9 +15,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(new ExceptionResponse(e.getErrorCode().name(), e.getMessage()));
     }
 
-    @ExceptionHandler({Exception.class})
-    public ResponseEntity<ExceptionResponse> handleCustomException(Exception e) {
-        log.warn("internal error : {}", e.getMessage());
-        return ResponseEntity.badRequest().body(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.name(), e.getMessage()));
-    }
+//    @ExceptionHandler({Exception.class})
+//    public ResponseEntity<ExceptionResponse> handleCustomException(Exception e) {
+//        log.warn("internal error : {}", e.getMessage());
+//        return ResponseEntity.badRequest().body(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.name(), e.getMessage()));
+//    }
 }

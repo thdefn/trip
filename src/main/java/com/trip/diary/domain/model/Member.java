@@ -1,7 +1,9 @@
 package com.trip.diary.domain.model;
 
+import com.trip.diary.domain.type.MemberType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
@@ -10,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
+@Entity(name = "MEMBER")
 public class Member extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,4 +31,12 @@ public class Member extends BaseEntity {
     private String nickname;
 
     private String profileUrl;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    private MemberType type = MemberType.USER;
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 }
