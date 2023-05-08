@@ -1,9 +1,9 @@
 package com.trip.diary.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.impl.TextCodec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,14 +40,17 @@ public class TokenProvider {
     }
 
     public String getUsername(String token) {
-        log.error(parseClaims(token).getSubject());
         return parseClaims(token).getSubject();
     }
 
     private Claims parseClaims(String token) {
-        return Jwts.parser().setSigningKey(secretKey)
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parser().setSigningKey(secretKey)
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        }
     }
 
 }

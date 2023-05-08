@@ -26,7 +26,7 @@ public class AuthService {
     private final MemberRepository memberRepository;
 
     public void register(SignUpForm form) {
-        if (memberRepository.findByUsername(form.getUsername()).isPresent()) {
+        if (memberRepository.existsByUsername(form.getUsername())) {
             throw new CustomException(ID_ALREADY_USED);
         }
 
