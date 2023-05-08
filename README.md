@@ -1,5 +1,6 @@
 # 개요
 네이버 밴드 같은 느낌의 여행 기록장
+https://www.figma.com/file/L7MtdZ6st95sgtKKnsskzq/Untitled?type=design&node-id=0-1&t=3EJHM4JF15Vqd0yc-0
 
 # ERD
 https://www.erdcloud.com/d/v7bEz5NzwbPZzg7qK
