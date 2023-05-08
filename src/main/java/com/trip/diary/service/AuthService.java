@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import static com.trip.diary.exception.ErrorCode.ID_ALREADY_USED;
+import static com.trip.diary.exception.ErrorCode.*;
 
 @Service
 @Slf4j
@@ -28,6 +28,10 @@ public class AuthService {
     public void register(SignUpForm form) {
         if (memberRepository.existsByUsername(form.getUsername())) {
             throw new CustomException(ID_ALREADY_USED);
+        }
+
+        if (memberRepository.existsByPhone(form.getPhone())) {
+            throw new CustomException(MOBILE_ALREADY_REGISTERED);
         }
 
         form.setPassword(passwordEncoder.encode(form.getPassword()));
