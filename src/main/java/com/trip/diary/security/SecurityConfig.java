@@ -24,8 +24,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final TokenProvider tokenProvider;
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -36,8 +34,9 @@ public class SecurityConfig {
         return new UserDetailsServiceImpl();
     }
 
+    @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(tokenProvider, userDetailsService());
+        return new JwtAuthenticationFilter();
     }
 
     @Bean

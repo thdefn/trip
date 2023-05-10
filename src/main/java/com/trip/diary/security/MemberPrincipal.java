@@ -16,18 +16,11 @@ import java.util.List;
 @Slf4j
 public class MemberPrincipal implements UserDetails {
 
-    private Long id;
-
-    private String username;
-
-    private String password;
-
+    private Member member;
     private List<GrantedAuthority> authorities = new ArrayList<>();
 
     public MemberPrincipal(Member member) {
-        this.id = member.getId();
-        this.username = member.getUsername();
-        this.password = member.getPassword();
+        this.member = member;
         authorities.add(new SimpleGrantedAuthority(MemberType.USER.name()));
     }
 
@@ -38,12 +31,12 @@ public class MemberPrincipal implements UserDetails {
 
     @Override
     public String getPassword() {
-        return password;
+        return member.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return username;
+        return member.getUsername();
     }
 
     @Override
