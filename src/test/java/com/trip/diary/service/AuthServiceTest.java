@@ -13,9 +13,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
@@ -28,6 +30,9 @@ class AuthServiceTest {
 
     @Mock
     private TokenProvider tokenProvider;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -48,6 +53,14 @@ class AuthServiceTest {
         given(memberRepository.existsByUsername(anyString())).willReturn(false);
         given(memberRepository.existsByPhone(anyString())).willReturn(false);
         given(passwordEncoder.encode(anyString())).willReturn("encodedpassword");
+        given(memberRepository.save(any()))
+                .willReturn(Member.builder()
+                        .username("qwerty99")
+                        .nickname("김맹맹")
+                        .password("1234567")
+                        .phone("01011111111")
+                        .build()
+                );
         //when
         ArgumentCaptor<Member> captor = ArgumentCaptor.forClass(Member.class);
         authService.register(form);

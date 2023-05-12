@@ -7,9 +7,11 @@ import com.trip.diary.domain.repository.MemberRepository;
 import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.TripRepository;
 import com.trip.diary.dto.*;
+import com.trip.diary.event.dto.TripInviteEvent;
 import com.trip.diary.exception.CustomException;
 import com.trip.diary.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,8 @@ public class TripService {
 
     private final ParticipantRepository participantRepository;
 
+    private final ApplicationEventPublisher applicationEventPublisher;
+
 
     @Transactional
     public CreateTripDto create(CreateTripForm form, Member member) {
@@ -48,6 +52,8 @@ public class TripService {
 
         Set<Long> participantsIds = form.getParticipants();
         participantsIds.add(member.getId());
+        applicationEventPublisher.publishEvent(new TripInviteEvent(participantsIds, trip.getId()));
+
         return CreateTripDto.of(trip, member.getId(),
                 participantRepository.saveAll(getParticipants(participantsIds, trip)));
     }
@@ -96,7 +102,7 @@ public class TripService {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new CustomException(NOT_FOUND_TRIP));
 
-        if(!Objects.equals(trip.getLeader().getId(), member.getId())){
+        if (!Objects.equals(trip.getLeader().getId(), member.getId())) {
             throw new CustomException(NOT_AUTHORITY_WRITE_TRIP);
         }
 
