@@ -70,10 +70,6 @@ public class TripService {
                 ).collect(Collectors.toList());
     }
 
-    public Slice<MemberDto> getAddableMembers(Member member) {
-        return memberRepository.findByIdNot(member.getId())
-                .map(MemberDto::of);
-    }
 
     @Transactional
     public List<ParticipantDto> getTripParticipants(Long tripId, Member member) {
@@ -94,7 +90,7 @@ public class TripService {
     }
 
     private boolean isMemberTripParticipants(List<Participant> participants, Long memberId) {
-        return participants.stream().anyMatch(participant -> participant.getId().equals(memberId));
+        return participants.stream().anyMatch(participant -> participant.getMember().getId().equals(memberId));
     }
 
 

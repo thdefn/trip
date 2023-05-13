@@ -6,7 +6,6 @@ import com.trip.diary.service.TripService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Slice;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -32,11 +31,6 @@ public class TripController {
                                                @Valid @RequestBody UpdateTripForm form,
                                                @AuthenticationPrincipal MemberPrincipal principal) {
         return ResponseEntity.ok(tripService.updateTrip(tripId, form, principal.getMember()));
-    }
-
-    @GetMapping("/members")
-    private ResponseEntity<Slice<MemberDto>> getAddableMembers(@AuthenticationPrincipal MemberPrincipal principal) {
-        return ResponseEntity.ok(tripService.getAddableMembers(principal.getMember()));
     }
 
     @GetMapping("/{tripId}/participants")
