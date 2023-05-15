@@ -3,10 +3,10 @@ POST http://localhost:8080/auth/signup
 Content-Type: application/json
 
 {
-  "username" : "thdefn2",
+  "username" : "thistimeisnotdawn",
   "password" : "1234",
-  "nickname" : "daru",
-  "phone" : "01041230233"
+  "nickname" : "새벽이아님",
+  "phone" : "01023456669"
 }
 
 ### 로그인
@@ -14,6 +14,40 @@ POST http://localhost:8080/auth/signin
 Content-Type: application/json
 
 {
-  "username" : "thdefn",
+  "username" : "thistimeisnotdawn",
   "password" : "1234"
+}
+
+### 기록장 만들기
+POST http://localhost:8080/trips
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGlzdGltZWlzbm90ZGF3biIsImlhdCI6MTY4Mzg0MjIwMywiZXhwIjoxNjgzODQ1ODAzfQ.D6hZdPh6Duourf32Vn9I5WwvMZ5T1ghF5zfyTKDJOqY
+
+{
+  "title" : "강릉 여행 마지막...",
+  "description" : "강릉 여행을 갈거다..",
+  "isPrivate" : false,
+  "participants" : [3, 7, 8]
+}
+
+### 기록장에 초대할 유저 리스트 조회
+GET http://localhost:8080/trips/members
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODM2Nzc4ODcsImV4cCI6MTY4MzY4MTQ4N30.e_yjEUQyDYLiuuINhX9vgFgWRY3JlMxkjV5lCxu59no
+
+### 기록장에 초대한 유저 리스트 조회
+GET http://localhost:8080/trips/2/participants
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODM2ODE2ODIsImV4cCI6MTY4MzY4NTI4Mn0.XeTqtVn2DDe9CYJkFeT1xixOjqdFlP1BPs6ouquNeFY
+
+
+### 기록장 업데이트
+PUT http://localhost:8080/trips/2
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODM2ODE2ODIsImV4cCI6MTY4MzY4NTI4Mn0.XeTqtVn2DDe9CYJkFeT1xixOjqdFlP1BPs6ouquNeFY
+
+{
+  "title" : "제주도 여행이 아니라 강릉 여행? ",
+  "description" : "제주도 여행인줄 알았으나 강릉 여행이예욧",
+  "isPrivate" : false
 }

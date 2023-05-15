@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SignUpForm {
-    @Size(min = 5, max = 20, message = "아이디는 5자 이상 20자 이하입니다.")
+    @Size(min = 5, max = 20, message = "5자 이상 20자 이하의 아이디를 입력해주세요.")
     private String username;
     private String password;
     @Size(min = 11, max = 11, message = "유효한 핸드폰 번호인지 확인해주세요")

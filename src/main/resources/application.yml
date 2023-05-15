@@ -22,5 +22,10 @@ spring:
   h2:
     console:
       enabled: true
+  data:
+    elasticsearch:
+      repositories:
+        enabled: true
+      url: localhost:9200
   jwt:
     secret: d29uc2Vvbnp6YW5nCg==
