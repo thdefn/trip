@@ -7,6 +7,7 @@ import com.trip.diary.domain.repository.MemberRepository;
 import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.TripRepository;
 import com.trip.diary.dto.*;
+import com.trip.diary.elasticsearch.repository.MemberSearchRepository;
 import com.trip.diary.event.dto.TripInviteEvent;
 import com.trip.diary.exception.ErrorCode;
 import com.trip.diary.exception.TripException;
@@ -34,6 +35,8 @@ public class TripService {
     private final MemberRepository memberRepository;
 
     private final ParticipantRepository participantRepository;
+
+    private final MemberSearchRepository memberSearchRepository;
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -104,5 +107,19 @@ public class TripService {
         trip.update(form);
 
         return TripDto.of(tripRepository.save(trip));
+    }
+
+    public List<MemberDto> searchAddableMembers(String keyword, Member member) {
+        return memberSearchRepository.findByNicknameContainsIgnoreCase(keyword).stream()
+                .filter(memberDocument -> !Objects.equals(memberDocument.getId(), member.getId()))
+                .map(MemberDto::of)
+                .collect(Collectors.toList());
+    }
+
+    public List<MemberDto> searchAddableMembersInTrip(Long tripId, String keyword, Member member) {
+        return memberSearchRepository.findByNicknameContainsIgnoreCase(keyword).stream()
+                .filter(memberDocument -> !Objects.equals(memberDocument.getId(), member.getId()))
+                .map(memberDocument -> MemberDto.of(memberDocument, tripId))
+                .collect(Collectors.toList());
     }
 }

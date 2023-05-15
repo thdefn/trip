@@ -38,4 +38,17 @@ public class TripController {
                                                                      @AuthenticationPrincipal MemberPrincipal principal) {
         return ResponseEntity.ok(tripService.getTripParticipants(tripId, principal.getMember()));
     }
+
+    @GetMapping("/members")
+    private ResponseEntity<List<MemberDto>> searchAddableMembers(@RequestParam String keyword,
+                                                                 @AuthenticationPrincipal MemberPrincipal principal) {
+        return ResponseEntity.ok(tripService.searchAddableMembers(keyword, principal.getMember()));
+    }
+
+    @GetMapping("/{tripId}/members")
+    private ResponseEntity<List<MemberDto>> searchAddableMembersInTrip(@PathVariable Long tripId,
+                                                                       @RequestParam String keyword,
+                                                                       @AuthenticationPrincipal MemberPrincipal principal) {
+        return ResponseEntity.ok(tripService.searchAddableMembersInTrip(tripId, keyword, principal.getMember()));
+    }
 }

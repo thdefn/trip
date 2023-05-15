@@ -1,6 +1,7 @@
 package com.trip.diary.dto;
 
-import com.trip.diary.domain.model.Member;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.trip.diary.elasticsearch.model.MemberDocument;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,12 +15,23 @@ public class MemberDto {
     private Long id;
     private String nickname;
     private String profileUrl;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean isInvited;
 
-    public static MemberDto of(Member member) {
+    public static MemberDto of(MemberDocument memberDocument) {
         return MemberDto.builder()
-                .id(member.getId())
-                .nickname(member.getNickname())
-                .profileUrl(member.getProfileUrl())
+                .id(memberDocument.getId())
+                .nickname(memberDocument.getNickname())
+                .profileUrl(memberDocument.getProfileUrl())
+                .build();
+    }
+
+    public static MemberDto of(MemberDocument memberDocument, Long tripId) {
+        return MemberDto.builder()
+                .id(memberDocument.getId())
+                .nickname(memberDocument.getNickname())
+                .profileUrl(memberDocument.getProfileUrl())
+                .isInvited(memberDocument.isInvitedInTrip(tripId))
                 .build();
     }
 }

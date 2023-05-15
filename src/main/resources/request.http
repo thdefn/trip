@@ -51,3 +51,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODM2O
   "description" : "제주도 여행인줄 알았으나 강릉 여행이예욧",
   "isPrivate" : false
 }
+
+###
+GET http://localhost:8080/trips/members?keyword=새
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGlzdGltZWlzbm90ZGF3biIsImlhdCI6MTY4NDExMzE1OSwiZXhwIjoxNjg0MTE2NzU5fQ.R62Rr1VYk6rSB227rRWelzvFdkdkUXcb9R1kd31I-E8
+
+###
+GET http://localhost:8080/trips/4/members?keyword=새
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGlzdGltZWlzbm90ZGF3biIsImlhdCI6MTY4NDExMzE1OSwiZXhwIjoxNjg0MTE2NzU5fQ.R62Rr1VYk6rSB227rRWelzvFdkdkUXcb9R1kd31I-E8
