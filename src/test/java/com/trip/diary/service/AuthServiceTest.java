@@ -5,8 +5,8 @@ import com.trip.diary.domain.repository.MemberRepository;
 import com.trip.diary.dto.SignInForm;
 import com.trip.diary.dto.SignUpForm;
 import com.trip.diary.dto.TokenDto;
-import com.trip.diary.exception.CustomException;
 import com.trip.diary.exception.ErrorCode;
+import com.trip.diary.exception.MemberException;
 import com.trip.diary.security.TokenProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -87,7 +87,7 @@ class AuthServiceTest {
                 .build();
         given(memberRepository.existsByUsername(anyString())).willReturn(true);
         //when
-        CustomException exception = assertThrows(CustomException.class,
+        MemberException exception = assertThrows(MemberException.class,
                 () -> authService.register(form));
         //then
         assertEquals(exception.getErrorCode(), ErrorCode.ID_ALREADY_USED);
@@ -106,7 +106,7 @@ class AuthServiceTest {
         given(memberRepository.existsByUsername(anyString())).willReturn(false);
         given(memberRepository.existsByPhone(anyString())).willReturn(true);
         //when
-        CustomException exception = assertThrows(CustomException.class,
+        MemberException exception = assertThrows(MemberException.class,
                 () -> authService.register(form));
         //then
         assertEquals(exception.getErrorCode(), ErrorCode.MOBILE_ALREADY_REGISTERED);
@@ -139,7 +139,7 @@ class AuthServiceTest {
                 .build();
         given(memberRepository.findByUsername(anyString())).willReturn(Optional.empty());
         //when
-        CustomException exception = assertThrows(CustomException.class,
+        MemberException exception = assertThrows(MemberException.class,
                 () -> authService.authenticate(form));
         //then
         assertEquals(ErrorCode.NOT_FOUND_MEMBER, exception.getErrorCode());
@@ -156,7 +156,7 @@ class AuthServiceTest {
         given(memberRepository.findByUsername(anyString())).willReturn(Optional.of(member));
         given(passwordEncoder.matches(any(), anyString())).willReturn(false);
         //when
-        CustomException exception = assertThrows(CustomException.class,
+        MemberException exception = assertThrows(MemberException.class,
                 () -> authService.authenticate(form));
         //then
         assertEquals(ErrorCode.PASSWORD_UNMATCHED, exception.getErrorCode());

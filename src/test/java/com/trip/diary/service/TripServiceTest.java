@@ -8,8 +8,8 @@ import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.TripRepository;
 import com.trip.diary.domain.type.ParticipantType;
 import com.trip.diary.dto.*;
-import com.trip.diary.exception.CustomException;
 import com.trip.diary.exception.ErrorCode;
+import com.trip.diary.exception.TripException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -193,7 +193,7 @@ class TripServiceTest {
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.empty());
         //when
-        CustomException exception = assertThrows(CustomException.class,
+        TripException exception = assertThrows(TripException.class,
                 () -> tripService.updateTrip(1L, form, member));
         //then
         assertEquals(exception.getErrorCode(), ErrorCode.NOT_FOUND_TRIP);
@@ -228,7 +228,7 @@ class TripServiceTest {
                                 .build()
                 ));
         //when
-        CustomException exception = assertThrows(CustomException.class,
+        TripException exception = assertThrows(TripException.class,
                 () -> tripService.updateTrip(1L, form, member));
         //then
         assertEquals(exception.getErrorCode(), ErrorCode.NOT_AUTHORITY_WRITE_TRIP);
@@ -383,7 +383,7 @@ class TripServiceTest {
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
         //when
-        CustomException exception = assertThrows(CustomException.class,
+        TripException exception = assertThrows(TripException.class,
                 () -> tripService.getTripParticipants(1L, member));
         //then
         assertEquals(exception.getErrorCode(), ErrorCode.NOT_AUTHORITY_READ_TRIP);
