@@ -8,7 +8,10 @@ import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.TripRepository;
 import com.trip.diary.domain.type.ParticipantType;
 import com.trip.diary.dto.*;
+import com.trip.diary.elasticsearch.model.MemberDocument;
+import com.trip.diary.elasticsearch.repository.MemberSearchRepository;
 import com.trip.diary.exception.ErrorCode;
+import com.trip.diary.exception.MemberException;
 import com.trip.diary.exception.TripException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,8 +27,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -40,6 +42,9 @@ class TripServiceTest {
 
     @Mock
     private ParticipantRepository participantRepository;
+
+    @Mock
+    private MemberSearchRepository memberSearchRepository;
 
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
@@ -349,7 +354,7 @@ class TripServiceTest {
     }
 
     @Test
-    @DisplayName("여행 기록장 참여 멤버 조회 성공 - 조회자가 참여자가 아니고 해당 여행 기록장이 비밀임")
+    @DisplayName("여행 기록장 참여 멤버 조회 실패 - 조회자가 참여자가 아니고 해당 여행 기록장이 비밀임")
     void getTripParticipantsTest_failWhenNotAuthorityReadTrip() {
         //given
         Member leader = Member.builder()
@@ -387,6 +392,257 @@ class TripServiceTest {
                 () -> tripService.getTripParticipants(1L, member));
         //then
         assertEquals(exception.getErrorCode(), ErrorCode.NOT_AUTHORITY_READ_TRIP);
+    }
+
+    @Test
+    @DisplayName("여행 기록장에 초대할 멤버 검색 성공")
+    void searchAddableMembersTest_success() {
+        //given
+        given(memberSearchRepository.findByNicknameContainsIgnoreCase(anyString()))
+                .willReturn(Arrays.asList(
+                        MemberDocument.builder()
+                                .id(1L)
+                                .nickname("바밤바")
+                                .profileUrl("basic.jpg")
+                                .trips(List.of(new MemberDocument.Trip(1L)))
+                                .build(),
+                        MemberDocument.builder()
+                                .id(3L)
+                                .nickname("투움바 파스타")
+                                .profileUrl("basic.jpg")
+                                .trips(List.of(
+                                        new MemberDocument.Trip(2L),
+                                        new MemberDocument.Trip(4L)
+                                ))
+                                .build(),
+                        MemberDocument.builder()
+                                .id(4L)
+                                .nickname("바나나")
+                                .profileUrl("basic.jpg")
+                                .trips(List.of(new MemberDocument.Trip(1L)))
+                                .build()
+                ));
+        //when
+        List<MemberDto> result = tripService.searchAddableMembers("바", member);
+        //then
+        assertEquals(2, result.size());
+        assertEquals(result.get(0).getId(), 3L);
+        assertEquals(result.get(0).getNickname(), "투움바 파스타");
+        assertEquals(result.get(1).getId(), 4L);
+        assertEquals(result.get(1).getNickname(), "바나나");
+    }
+
+    @Test
+    @DisplayName("생성된 여행 기록장에 초대할 멤버 검색 성공")
+    void searchAddableMembersInTripTest_success() {
+        //given
+        given(memberSearchRepository.findByNicknameContainsIgnoreCase(anyString()))
+                .willReturn(Arrays.asList(
+                        MemberDocument.builder()
+                                .id(1L)
+                                .nickname("바밤바")
+                                .profileUrl("basic.jpg")
+                                .trips(List.of(new MemberDocument.Trip(1L)))
+                                .build(),
+                        MemberDocument.builder()
+                                .id(3L)
+                                .nickname("투움바 파스타")
+                                .profileUrl("basic.jpg")
+                                .trips(List.of(
+                                        new MemberDocument.Trip(2L),
+                                        new MemberDocument.Trip(4L)
+                                ))
+                                .build(),
+                        MemberDocument.builder()
+                                .id(4L)
+                                .nickname("바나나")
+                                .profileUrl("basic.jpg")
+                                .trips(List.of(new MemberDocument.Trip(1L)))
+                                .build()
+                ));
+        //when
+        List<MemberDto> result = tripService.searchAddableMembersInTrip(1L, "바", member);
+        //then
+        assertEquals(2, result.size());
+        assertFalse(result.get(0).getIsInvited());
+        assertTrue(result.get(1).getIsInvited());
+        assertEquals(result.get(0).getId(), 3L);
+        assertEquals(result.get(0).getNickname(), "투움바 파스타");
+        assertEquals(result.get(1).getId(), 4L);
+        assertEquals(result.get(1).getNickname(), "바나나");
+    }
+
+    @Test
+    @DisplayName("여행 기록장에 멤버 초대 성공 - 초대")
+    void inviteOrCancel_successInvite() {
+        //given
+        Member target = Member.builder()
+                .id(4L)
+                .username("1234qwert")
+                .nickname("오땡땡")
+                .password("1234567")
+                .profileUrl(null)
+                .phone("01011111114")
+                .build();
+
+        Trip trip = Trip.builder()
+                .id(1L)
+                .title("임의의 타이틀")
+                .isPrivate(true)
+                .description("임의의 설명")
+                .leader(member)
+                .participants(List.of(
+                        Participant.builder()
+                                .member(member)
+                                .type(ParticipantType.ACCEPTED)
+                                .build(),
+                        Participant.builder()
+                                .member(participant1)
+                                .type(ParticipantType.PENDING)
+                                .build(),
+                        Participant.builder()
+                                .member(participant2)
+                                .type(ParticipantType.PENDING)
+                                .build()))
+                .build();
+        given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(memberRepository.findById(anyLong())).willReturn(Optional.of(target));
+        given(participantRepository.findByTripAndMember(any(), any()))
+                .willReturn(Optional.empty());
+        //when
+        tripService.inviteOrCancel(1L, 4L, member);
+        //then
+        verify(participantRepository, times(1)).save(any());
+    }
+
+    @Test
+    @DisplayName("여행 기록장에 멤버 초대 성공 - 초대 취소")
+    void inviteOrCancel_successCancel() {
+        //given
+        Member target = Member.builder()
+                .id(4L)
+                .username("1234qwert")
+                .nickname("오땡땡")
+                .password("1234567")
+                .profileUrl(null)
+                .phone("01011111114")
+                .build();
+
+        Trip trip = Trip.builder()
+                .id(1L)
+                .title("임의의 타이틀")
+                .isPrivate(true)
+                .description("임의의 설명")
+                .leader(member)
+                .participants(List.of(
+                        Participant.builder()
+                                .member(member)
+                                .type(ParticipantType.ACCEPTED)
+                                .build(),
+                        Participant.builder()
+                                .member(participant1)
+                                .type(ParticipantType.PENDING)
+                                .build(),
+                        Participant.builder()
+                                .member(participant2)
+                                .type(ParticipantType.PENDING)
+                                .build()))
+                .build();
+        given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(memberRepository.findById(anyLong())).willReturn(Optional.of(target));
+        given(participantRepository.findByTripAndMember(any(), any()))
+                .willReturn(Optional.of(Participant.builder()
+                        .id(1L)
+                        .trip(trip)
+                        .member(target)
+                        .build()));
+        //when
+        tripService.inviteOrCancel(1L, 4L, member);
+        //then
+        verify(participantRepository, times(1)).delete(any());
+    }
+
+    @Test
+    @DisplayName("여행 기록장에 멤버 초대 실패 - 해당 여행 기록장 없음")
+    void inviteOrCancel_failWhenNotFoundTrip() {
+        //given
+        given(tripRepository.findById(anyLong())).willReturn(Optional.empty());
+        //when
+        TripException exception = assertThrows(TripException.class,
+                () -> tripService.inviteOrCancel(1L, 4L, member));
+        //then
+        assertEquals(exception.getErrorCode(), ErrorCode.NOT_FOUND_TRIP);
+    }
+
+    @Test
+    @DisplayName("여행 기록장에 멤버 초대 실패 - 해당 여행 기록장 없음")
+    void inviteOrCancel_failWhenNotFoundMember() {
+        //given
+        Trip trip = Trip.builder()
+                .id(1L)
+                .title("임의의 타이틀")
+                .isPrivate(true)
+                .description("임의의 설명")
+                .leader(member)
+                .participants(List.of(
+                        Participant.builder()
+                                .member(member)
+                                .type(ParticipantType.ACCEPTED)
+                                .build(),
+                        Participant.builder()
+                                .member(participant1)
+                                .type(ParticipantType.PENDING)
+                                .build(),
+                        Participant.builder()
+                                .member(participant2)
+                                .type(ParticipantType.PENDING)
+                                .build()))
+                .build();
+        given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(memberRepository.findById(anyLong())).willReturn(Optional.empty());
+        //when
+        MemberException exception = assertThrows(MemberException.class,
+                () -> tripService.inviteOrCancel(1L, 4L, member));
+        //then
+        assertEquals(exception.getErrorCode(), ErrorCode.NOT_FOUND_MEMBER);
+    }
+
+    @Test
+    @DisplayName("여행 기록장에 멤버 초대 실패 - 초대 권한 없음")
+    void inviteOrCancel_failWhenNotAuthorityWriteTrip() {
+        //given
+        Member target = Member.builder()
+                .id(4L)
+                .username("1234qwert")
+                .nickname("오땡땡")
+                .password("1234567")
+                .profileUrl(null)
+                .phone("01011111114")
+                .build();
+
+        Trip trip = Trip.builder()
+                .id(1L)
+                .title("임의의 타이틀")
+                .isPrivate(true)
+                .description("임의의 설명")
+                .leader(member)
+                .participants(List.of(
+                        Participant.builder()
+                                .member(participant1)
+                                .type(ParticipantType.PENDING)
+                                .build(),
+                        Participant.builder()
+                                .member(participant2)
+                                .type(ParticipantType.PENDING)
+                                .build()))
+                .build();
+        given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(memberRepository.findById(anyLong())).willReturn(Optional.of(target));
+        //when
+        TripException exception = assertThrows(TripException.class,
+                () -> tripService.inviteOrCancel(1L, 4L, member));
+        //then
+        assertEquals(exception.getErrorCode(), ErrorCode.NOT_AUTHORITY_WRITE_TRIP);
     }
 
 }

@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 @SpringBootTest
 class TripApplicationTests {
 
-    @Autowired
-    private MemberSearchRepository memberSearchRepository;
+//    @Autowired
+//    private MemberSearchRepository memberSearchRepository;
 
 //    @Autowired
 //    private ElasticsearchOperations elasticsearchOperations;
@@ -41,18 +41,18 @@ class TripApplicationTests {
 //        //then
 //    }
 //
-    @Test
-    void test2() {
-        //given
-        List<MemberDocument> memberDocuments = memberSearchRepository.findByIdIn(Set.of(3L,5L,6L,8L));
-        //when
-        memberDocuments.stream()
-                .forEach(memberDocument -> {
-                    System.out.println(memberDocument.getId());
-                    System.out.println("trip-->" + memberDocument.getTrips().get(0).getId());
-                });
-        //then
-    }
+//    @Test
+//    void test2() {
+//        //given
+//        List<MemberDocument> memberDocuments = memberSearchRepository.findByIdIn(Set.of(3L,5L,6L,8L));
+//        //when
+//        memberDocuments.stream()
+//                .forEach(memberDocument -> {
+//                    System.out.println(memberDocument.getId());
+//                    System.out.println("trip-->" + memberDocument.getTrips().get(0).getId());
+//                });
+//        //then
+//    }
 
 //    @Test
 //    void test3() {

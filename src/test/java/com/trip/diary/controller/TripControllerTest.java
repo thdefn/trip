@@ -17,8 +17,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -135,6 +134,93 @@ class TripControllerTest {
         //when
         //then
         mockMvc.perform(get("/trips/{tripId}/participants", 1L)
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("여행 기록장에 초대할 멤버 검색 성공")
+    void searchAddableMembersTest_success() throws Exception {
+        //given
+        given(tripService.searchAddableMembers(anyString(), any()))
+                .willReturn(List.of(
+                        MemberDto.builder()
+                                .id(1L)
+                                .nickname("바밤바")
+                                .profileUrl("basic.jpg")
+                                .build(),
+                        MemberDto.builder()
+                                .id(3L)
+                                .nickname("투움바 파스타")
+                                .profileUrl("basic.jpg")
+                                .build(),
+                        MemberDto.builder()
+                                .id(1L)
+                                .nickname("바나나")
+                                .profileUrl("basic.jpg")
+                                .build()));
+        //when
+        //then
+        mockMvc.perform(get("/trips/members/search")
+                        .param("keyword", "바")
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("생성된 여행 기록장에 초대할 멤버 검색 성공")
+    void searchAddableMembersInTripTest_success() throws Exception {
+        //given
+        given(tripService.searchAddableMembers(anyString(), any()))
+                .willReturn(List.of(
+                        MemberDto.builder()
+                                .id(1L)
+                                .nickname("바밤바")
+                                .profileUrl("basic.jpg")
+                                .isInvited(true)
+                                .build(),
+                        MemberDto.builder()
+                                .id(3L)
+                                .nickname("투움바 파스타")
+                                .profileUrl("basic.jpg")
+                                .isInvited(false)
+                                .build(),
+                        MemberDto.builder()
+                                .id(1L)
+                                .nickname("바나나")
+                                .profileUrl("basic.jpg")
+                                .isInvited(false)
+                                .build()));
+        //when
+        //then
+        mockMvc.perform(get("/trips/{tripId}/members/search", 1L)
+                        .param("keyword", "바")
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("여행 기록장에 유저 초대 or 초대 취소 성공")
+    void inviteOrCancelTest_success() throws Exception {
+        //given
+        //when
+        //then
+        mockMvc.perform(put("/trips/{tripId}/members/{memberId}", 1L, 1L)
                         .header("Authorization", TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
 
