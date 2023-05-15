@@ -8,11 +8,10 @@ import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.TripRepository;
 import com.trip.diary.dto.*;
 import com.trip.diary.event.dto.TripInviteEvent;
-import com.trip.diary.exception.CustomException;
 import com.trip.diary.exception.ErrorCode;
+import com.trip.diary.exception.TripException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,12 +73,12 @@ public class TripService {
     @Transactional
     public List<ParticipantDto> getTripParticipants(Long tripId, Member member) {
         Trip trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new CustomException(NOT_FOUND_TRIP));
+                .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
 
         List<Participant> participants = trip.getParticipants();
 
         if (trip.isPrivate() && !isMemberTripParticipants(participants, member.getId())) {
-            throw new CustomException(ErrorCode.NOT_AUTHORITY_READ_TRIP);
+            throw new TripException(ErrorCode.NOT_AUTHORITY_READ_TRIP);
         }
 
         return participants
@@ -96,10 +95,10 @@ public class TripService {
 
     public TripDto updateTrip(Long tripId, UpdateTripForm form, Member member) {
         Trip trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new CustomException(NOT_FOUND_TRIP));
+                .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
 
         if (!Objects.equals(trip.getLeader().getId(), member.getId())) {
-            throw new CustomException(NOT_AUTHORITY_WRITE_TRIP);
+            throw new TripException(NOT_AUTHORITY_WRITE_TRIP);
         }
 
         trip.update(form);
