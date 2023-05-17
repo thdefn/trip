@@ -14,7 +14,7 @@ POST http://localhost:8080/auth/signin
 Content-Type: application/json
 
 {
-  "username" : "thistimeisnotdawn",
+  "username" : "thdefn",
   "password" : "1234"
 }
 
@@ -30,16 +30,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGlzdGltZWlzbm90ZGF3biIsI
   "participants" : [3, 7, 8]
 }
 
-### 기록장에 초대할 유저 리스트 조회
-GET http://localhost:8080/trips/members
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODM2Nzc4ODcsImV4cCI6MTY4MzY4MTQ4N30.e_yjEUQyDYLiuuINhX9vgFgWRY3JlMxkjV5lCxu59no
-
 ### 기록장에 초대한 유저 리스트 조회
 GET http://localhost:8080/trips/2/participants
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODM2ODE2ODIsImV4cCI6MTY4MzY4NTI4Mn0.XeTqtVn2DDe9CYJkFeT1xixOjqdFlP1BPs6ouquNeFY
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODQyODcyMzEsImV4cCI6MTY4NDI5MDgzMX0.akJCM7hZngOavguuvcND8L8NpdKtWZOgDZg-RJInG_w
 
 ### 기록장 업데이트
 PUT http://localhost:8080/trips/2
@@ -51,3 +45,24 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODM2O
   "description" : "제주도 여행인줄 알았으나 강릉 여행이예욧",
   "isPrivate" : false
 }
+
+### 멤버 검색
+GET http://localhost:8080/trips/members/search?keyword=새
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGlzdGltZWlzbm90ZGF3biIsImlhdCI6MTY4NDExMzE1OSwiZXhwIjoxNjg0MTE2NzU5fQ.R62Rr1VYk6rSB227rRWelzvFdkdkUXcb9R1kd31I-E8
+
+### 생성된 여행 기록장에 초대할 멤버 검색
+GET http://localhost:8080/trips/2/members/search?keyword=새
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODQxNTEyMDEsImV4cCI6MTY4NDE1NDgwMX0.ZXTvfYIG6aSOfvLpOUGTEh9YPgzQ72NnygpjjDt68Ao
+
+### 멤버 초대
+PUT http://localhost:8080/trips/2/members/8
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODQyODcyMzEsImV4cCI6MTY4NDI5MDgzMX0.akJCM7hZngOavguuvcND8L8NpdKtWZOgDZg-RJInG_w
+
+
+### 멤버 방출
+DELETE http://localhost:8080/trips/2/members/8
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODQyODcyMzEsImV4cCI6MTY4NDI5MDgzMX0.akJCM7hZngOavguuvcND8L8NpdKtWZOgDZg-RJInG_w

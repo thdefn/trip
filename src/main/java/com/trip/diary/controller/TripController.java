@@ -33,9 +33,38 @@ public class TripController {
         return ResponseEntity.ok(tripService.updateTrip(tripId, form, principal.getMember()));
     }
 
+    @PutMapping("/{tripId}/members/{memberId}")
+    private ResponseEntity<Void> inviteOrCancel(@PathVariable Long tripId,
+                                                @PathVariable Long memberId,
+                                                @AuthenticationPrincipal MemberPrincipal principal) {
+        tripService.invite(tripId, memberId, principal.getMember());
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{tripId}/members/{memberId}")
+    private ResponseEntity<Void> kickOut(@PathVariable Long tripId,
+                                         @PathVariable Long memberId,
+                                         @AuthenticationPrincipal MemberPrincipal principal) {
+        tripService.kickOut(tripId, memberId, principal.getMember());
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/{tripId}/participants")
     private ResponseEntity<List<ParticipantDto>> getTripParticipants(@PathVariable Long tripId,
                                                                      @AuthenticationPrincipal MemberPrincipal principal) {
         return ResponseEntity.ok(tripService.getTripParticipants(tripId, principal.getMember()));
+    }
+
+    @GetMapping("/members/search")
+    private ResponseEntity<List<MemberDto>> searchAddableMembers(@RequestParam String keyword,
+                                                                 @AuthenticationPrincipal MemberPrincipal principal) {
+        return ResponseEntity.ok(tripService.searchAddableMembers(keyword, principal.getMember()));
+    }
+
+    @GetMapping("/{tripId}/members/search")
+    private ResponseEntity<List<MemberDto>> searchAddableMembersInTrip(@PathVariable Long tripId,
+                                                                       @RequestParam String keyword,
+                                                                       @AuthenticationPrincipal MemberPrincipal principal) {
+        return ResponseEntity.ok(tripService.searchAddableMembersInTrip(tripId, keyword, principal.getMember()));
     }
 }

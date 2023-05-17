@@ -20,7 +20,7 @@ class TripApplicationTests {
 
 //    @Autowired
 //    private MemberSearchRepository memberSearchRepository;
-//
+
 //    @Autowired
 //    private ElasticsearchOperations elasticsearchOperations;
 
@@ -53,7 +53,7 @@ class TripApplicationTests {
 //                });
 //        //then
 //    }
-//
+
 //    @Test
 //    void test3() {
 //        List<UpdateQuery> updateQueries = memberSearchRepository.findByIdIn(Set.of(3L, 7L, 8L, 10L))

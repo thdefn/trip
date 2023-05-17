@@ -9,5 +9,9 @@ import java.util.Set;
 
 @Repository
 public interface MemberSearchRepository extends ElasticsearchRepository<MemberDocument, Long> {
+    List<MemberDocument> findById(Long id);
+
     List<MemberDocument> findByIdIn(Set<Long> ids);
+
+    List<MemberDocument> findByNicknameContainsIgnoreCase(String nickname);
 }

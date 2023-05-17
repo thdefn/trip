@@ -47,4 +47,16 @@ public class MemberDocument {
     public void addTripId(Long tripId) {
         trips.add(new Trip(tripId));
     }
+
+    public void removeTripId(Long tripId) {
+        trips.stream()
+                .filter(trip -> trip.getId().equals(tripId))
+                .findAny()
+                .ifPresent(trip -> trips.remove(trip));
+    }
+
+    public boolean isInvitedInTrip(Long tripId) {
+        return trips.stream()
+                .anyMatch(trip -> trip.getId().equals(tripId));
+    }
 }
