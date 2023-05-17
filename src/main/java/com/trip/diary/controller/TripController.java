@@ -37,7 +37,15 @@ public class TripController {
     private ResponseEntity<Void> inviteOrCancel(@PathVariable Long tripId,
                                                 @PathVariable Long memberId,
                                                 @AuthenticationPrincipal MemberPrincipal principal) {
-        tripService.inviteOrCancel(tripId, memberId, principal.getMember());
+        tripService.invite(tripId, memberId, principal.getMember());
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{tripId}/members/{memberId}")
+    private ResponseEntity<Void> kickOut(@PathVariable Long tripId,
+                                         @PathVariable Long memberId,
+                                         @AuthenticationPrincipal MemberPrincipal principal) {
+        tripService.kickOut(tripId, memberId, principal.getMember());
         return ResponseEntity.ok().build();
     }
 

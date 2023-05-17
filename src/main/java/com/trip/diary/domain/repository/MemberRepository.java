@@ -16,6 +16,4 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     boolean existsByPhone(String phone);
 
     List<Member> findAllByIdIn(Set<Long> ids);
-
-    Slice<Member> findByIdNot(Long id);
 }

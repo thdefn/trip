@@ -33,7 +33,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGlzdGltZWlzbm90ZGF3biIsI
 ### 기록장에 초대한 유저 리스트 조회
 GET http://localhost:8080/trips/2/participants
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODQxNTA2MjAsImV4cCI6MTY4NDE1NDIyMH0.-0Ymqo_zN5PKVN30MxSTzWO0tUwfz2A_2kTh8TMbTn8
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODQyODcyMzEsImV4cCI6MTY4NDI5MDgzMX0.akJCM7hZngOavguuvcND8L8NpdKtWZOgDZg-RJInG_w
 
 ### 기록장 업데이트
 PUT http://localhost:8080/trips/2
@@ -59,4 +59,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODQxN
 ### 멤버 초대
 PUT http://localhost:8080/trips/2/members/8
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODQxNTA2MjAsImV4cCI6MTY4NDE1NDIyMH0.-0Ymqo_zN5PKVN30MxSTzWO0tUwfz2A_2kTh8TMbTn8
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODQyODcyMzEsImV4cCI6MTY4NDI5MDgzMX0.akJCM7hZngOavguuvcND8L8NpdKtWZOgDZg-RJInG_w
+
+
+### 멤버 방출
+DELETE http://localhost:8080/trips/2/members/8
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODQyODcyMzEsImV4cCI6MTY4NDI5MDgzMX0.akJCM7hZngOavguuvcND8L8NpdKtWZOgDZg-RJInG_w

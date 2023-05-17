@@ -9,6 +9,7 @@ import com.trip.diary.domain.repository.TripRepository;
 import com.trip.diary.dto.*;
 import com.trip.diary.elasticsearch.repository.MemberSearchRepository;
 import com.trip.diary.event.dto.TripInviteEvent;
+import com.trip.diary.event.dto.TripKickOutEvent;
 import com.trip.diary.exception.ErrorCode;
 import com.trip.diary.exception.MemberException;
 import com.trip.diary.exception.TripException;
@@ -124,7 +125,7 @@ public class TripService {
     }
 
     @Transactional
-    public void inviteOrCancel(Long tripId, Long targetId, Member member) {
+    public void invite(Long tripId, Long targetId, Member member) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
 
@@ -136,13 +137,33 @@ public class TripService {
         }
 
         applicationEventPublisher.publishEvent(new TripInviteEvent(Set.of(targetId), trip.getId()));
-        participantRepository.findByTripAndMember(trip, target)
+
+        if (participantRepository.existsByTripAndMember(trip, target)) {
+            throw new TripException(USER_ALREADY_INVITED);
+        }
+
+        participantRepository.save(Participant.builder()
+                .member(target)
+                .trip(trip)
+                .type(PENDING)
+                .build());
+    }
+
+    @Transactional
+    public void kickOut(Long tripId, Long targetId, Member member) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
+
+        if (!Objects.equals(trip.getLeader().getId(), member.getId())) {
+            throw new TripException(NOT_AUTHORITY_WRITE_TRIP);
+        }
+
+        applicationEventPublisher.publishEvent(new TripKickOutEvent(targetId, tripId));
+
+        participantRepository.findByTripAndMember_Id(trip, targetId)
                 .ifPresentOrElse(participantRepository::delete,
-                        () -> participantRepository.save(Participant.builder()
-                                .member(target)
-                                .trip(trip)
-                                .type(PENDING)
-                                .build())
-                );
+                        () -> {
+                            throw new TripException(NOT_FOUND_PARTICIPANT);
+                        });
     }
 }

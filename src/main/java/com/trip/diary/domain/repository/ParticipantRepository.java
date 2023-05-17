@@ -10,5 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface ParticipantRepository extends JpaRepository<Participant, Long> {
-    Optional<Participant> findByTripAndMember(Trip trip, Member member);
+    boolean existsByTripAndMember(Trip trip, Member member);
+
+    Optional<Participant> findByTripAndMember_Id(Trip trip, Long memberId);
 }

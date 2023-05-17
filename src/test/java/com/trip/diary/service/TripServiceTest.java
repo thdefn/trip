@@ -473,8 +473,8 @@ class TripServiceTest {
     }
 
     @Test
-    @DisplayName("여행 기록장에 멤버 초대 성공 - 초대")
-    void inviteOrCancel_successInvite() {
+    @DisplayName("여행 기록장에 멤버 초대 성공")
+    void invite_success() {
         //given
         Member target = Member.builder()
                 .id(4L)
@@ -507,17 +507,16 @@ class TripServiceTest {
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(target));
-        given(participantRepository.findByTripAndMember(any(), any()))
-                .willReturn(Optional.empty());
+        given(participantRepository.existsByTripAndMember(any(), any())).willReturn(false);
         //when
-        tripService.inviteOrCancel(1L, 4L, member);
+        tripService.invite(1L, 4L, member);
         //then
         verify(participantRepository, times(1)).save(any());
     }
 
     @Test
-    @DisplayName("여행 기록장에 멤버 초대 성공 - 초대 취소")
-    void inviteOrCancel_successCancel() {
+    @DisplayName("여행 기록장에 멤버 초대 실패 - 이미 초대된 유저임")
+    void invite_failWhenUserAlreadyInvited() {
         //given
         Member target = Member.builder()
                 .id(4L)
@@ -550,33 +549,29 @@ class TripServiceTest {
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(target));
-        given(participantRepository.findByTripAndMember(any(), any()))
-                .willReturn(Optional.of(Participant.builder()
-                        .id(1L)
-                        .trip(trip)
-                        .member(target)
-                        .build()));
+        given(participantRepository.existsByTripAndMember(any(), any())).willReturn(true);
         //when
-        tripService.inviteOrCancel(1L, 4L, member);
+        TripException exception = assertThrows(TripException.class,
+                () -> tripService.invite(1L, 4L, member));
         //then
-        verify(participantRepository, times(1)).delete(any());
+        assertEquals(exception.getErrorCode(), ErrorCode.USER_ALREADY_INVITED);
     }
 
     @Test
     @DisplayName("여행 기록장에 멤버 초대 실패 - 해당 여행 기록장 없음")
-    void inviteOrCancel_failWhenNotFoundTrip() {
+    void invite_failWhenNotFoundTrip() {
         //given
         given(tripRepository.findById(anyLong())).willReturn(Optional.empty());
         //when
         TripException exception = assertThrows(TripException.class,
-                () -> tripService.inviteOrCancel(1L, 4L, member));
+                () -> tripService.invite(1L, 4L, member));
         //then
         assertEquals(exception.getErrorCode(), ErrorCode.NOT_FOUND_TRIP);
     }
 
     @Test
-    @DisplayName("여행 기록장에 멤버 초대 실패 - 해당 여행 기록장 없음")
-    void inviteOrCancel_failWhenNotFoundMember() {
+    @DisplayName("여행 기록장에 멤버 초대 실패 - 해당 유저 없음")
+    void invite_failWhenNotFoundMember() {
         //given
         Trip trip = Trip.builder()
                 .id(1L)
@@ -602,14 +597,52 @@ class TripServiceTest {
         given(memberRepository.findById(anyLong())).willReturn(Optional.empty());
         //when
         MemberException exception = assertThrows(MemberException.class,
-                () -> tripService.inviteOrCancel(1L, 4L, member));
+                () -> tripService.invite(1L, 4L, member));
         //then
         assertEquals(exception.getErrorCode(), ErrorCode.NOT_FOUND_MEMBER);
     }
 
     @Test
-    @DisplayName("여행 기록장에 멤버 초대 실패 - 초대 권한 없음")
-    void inviteOrCancel_failWhenNotAuthorityWriteTrip() {
+    @DisplayName("여행 기록장에 멤버 초대 실패 - 해당 권한 없음")
+    void invite_failWhenNotAuthorityWriteTrip() {
+        //given
+        Member target = Member.builder()
+                .id(4L)
+                .username("1234qwert")
+                .nickname("오땡땡")
+                .password("1234567")
+                .profileUrl(null)
+                .phone("01011111114")
+                .build();
+
+        Trip trip = Trip.builder()
+                .id(1L)
+                .title("임의의 타이틀")
+                .isPrivate(true)
+                .description("임의의 설명")
+                .leader(participant1)
+                .participants(List.of(
+                        Participant.builder()
+                                .member(participant1)
+                                .type(ParticipantType.PENDING)
+                                .build(),
+                        Participant.builder()
+                                .member(participant2)
+                                .type(ParticipantType.PENDING)
+                                .build()))
+                .build();
+        given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(memberRepository.findById(anyLong())).willReturn(Optional.of(target));
+        //when
+        TripException exception = assertThrows(TripException.class,
+                () -> tripService.invite(1L, 4L, member));
+        //then
+        assertEquals(exception.getErrorCode(), ErrorCode.NOT_AUTHORITY_WRITE_TRIP);
+    }
+
+    @Test
+    @DisplayName("여행 기록장에 멤버 퇴출 성공")
+    void kickOut_success() {
         //given
         Member target = Member.builder()
                 .id(4L)
@@ -628,6 +661,10 @@ class TripServiceTest {
                 .leader(member)
                 .participants(List.of(
                         Participant.builder()
+                                .member(member)
+                                .type(ParticipantType.ACCEPTED)
+                                .build(),
+                        Participant.builder()
                                 .member(participant1)
                                 .type(ParticipantType.PENDING)
                                 .build(),
@@ -637,10 +674,97 @@ class TripServiceTest {
                                 .build()))
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
-        given(memberRepository.findById(anyLong())).willReturn(Optional.of(target));
+        given(participantRepository.findByTripAndMember_Id(any(), anyLong()))
+                .willReturn(Optional.of(Participant.builder()
+                        .member(participant2)
+                        .type(ParticipantType.PENDING)
+                        .build()
+                ));
+        //when
+        tripService.kickOut(1L, 4L, member);
+        //then
+        verify(participantRepository, times(1)).delete(any());
+    }
+
+    @Test
+    @DisplayName("여행 기록장에 멤버 퇴출 실패 - 해당 여행 기록장 없음")
+    void kickOut_failWhenNotFoundTrip() {
+        //given
+        given(tripRepository.findById(anyLong())).willReturn(Optional.empty());
         //when
         TripException exception = assertThrows(TripException.class,
-                () -> tripService.inviteOrCancel(1L, 4L, member));
+                () -> tripService.invite(1L, 4L, member));
+        //then
+        assertEquals(exception.getErrorCode(), ErrorCode.NOT_FOUND_TRIP);
+    }
+
+    @Test
+    @DisplayName("여행 기록장에 멤버 퇴출 실패 - 해당 유저 없음")
+    void kickOut_failWhenNotFoundMember() {
+        //given
+        Trip trip = Trip.builder()
+                .id(1L)
+                .title("임의의 타이틀")
+                .isPrivate(true)
+                .description("임의의 설명")
+                .leader(member)
+                .participants(List.of(
+                        Participant.builder()
+                                .member(member)
+                                .type(ParticipantType.ACCEPTED)
+                                .build(),
+                        Participant.builder()
+                                .member(participant1)
+                                .type(ParticipantType.PENDING)
+                                .build(),
+                        Participant.builder()
+                                .member(participant2)
+                                .type(ParticipantType.PENDING)
+                                .build()))
+                .build();
+        given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(participantRepository.findByTripAndMember_Id(any(), anyLong()))
+                .willReturn(Optional.empty());
+        //when
+        TripException exception = assertThrows(TripException.class,
+                () -> tripService.kickOut(1L, 4L, member));
+        //then
+        assertEquals(exception.getErrorCode(), ErrorCode.NOT_FOUND_PARTICIPANT);
+    }
+
+    @Test
+    @DisplayName("여행 기록장에 멤버 퇴출 실패 - 해당 권한 없음")
+    void kickOut_failWhenNotAuthorityWriteTrip() {
+        //given
+        Member target = Member.builder()
+                .id(4L)
+                .username("1234qwert")
+                .nickname("오땡땡")
+                .password("1234567")
+                .profileUrl(null)
+                .phone("01011111114")
+                .build();
+
+        Trip trip = Trip.builder()
+                .id(1L)
+                .title("임의의 타이틀")
+                .isPrivate(true)
+                .description("임의의 설명")
+                .leader(participant1)
+                .participants(List.of(
+                        Participant.builder()
+                                .member(participant1)
+                                .type(ParticipantType.PENDING)
+                                .build(),
+                        Participant.builder()
+                                .member(participant2)
+                                .type(ParticipantType.PENDING)
+                                .build()))
+                .build();
+        given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        //when
+        TripException exception = assertThrows(TripException.class,
+                () -> tripService.kickOut(1L, 4L, member));
         //then
         assertEquals(exception.getErrorCode(), ErrorCode.NOT_AUTHORITY_WRITE_TRIP);
     }
