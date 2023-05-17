@@ -29,3 +29,14 @@ spring:
       url: localhost:9200
   jwt:
     secret: d29uc2Vvbnp6YW5nCg==
+cloud:
+  aws:
+    credentials:
+      access-key: key
+      secret-key: key
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+    s3:
+      bucket: deploy
