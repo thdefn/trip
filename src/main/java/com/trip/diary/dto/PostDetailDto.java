@@ -18,6 +18,9 @@ public class PostDetailDto {
     private List<String> imagePaths;
     private Long locationId;
     private String locationName;
+    private Long authorId;
+    private String authorNickname;
+    private String authorProfilePath;
 
     public static PostDetailDto of(Post post, List<String> imagePaths) {
         return PostDetailDto.builder()
@@ -26,6 +29,9 @@ public class PostDetailDto {
                 .imagePaths(imagePaths)
                 .locationId(post.getLocation().getId())
                 .locationName(post.getLocation().getName())
+                .authorId(post.getMember().getId())
+                .authorNickname(post.getMember().getNickname())
+                .authorProfilePath(post.getMember().getProfilePath())
                 .build();
     }
 }

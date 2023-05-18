@@ -5,8 +5,9 @@ import com.trip.diary.domain.repository.LocationRepository;
 import com.trip.diary.domain.repository.PostImageRepository;
 import com.trip.diary.domain.repository.PostRepository;
 import com.trip.diary.domain.repository.TripRepository;
-import com.trip.diary.dto.PostDetailDto;
+import com.trip.diary.domain.type.ParticipantType;
 import com.trip.diary.dto.CreatePostForm;
+import com.trip.diary.dto.PostDetailDto;
 import com.trip.diary.dto.UpdatePostForm;
 import com.trip.diary.exception.PostException;
 import com.trip.diary.exception.TripException;
@@ -49,17 +50,10 @@ public class PostService {
         return PostDetailDto.of(savedPost, imagePaths);
     }
 
-    private void updateLocationThumbnail(Location location, String imagePath) {
-        location.setThumbnailPath(imagePath);
-        locationRepository.save(location);
-    }
-
-    private List<String> savePostImages(Post post, List<MultipartFile> images) {
-        List<String> imagePaths = imageManager.uploadImages(images, IMAGE_DOMAIN);
-        postImageRepository.saveAll(imagePaths.stream()
-                .map(path -> PostImage.of(path, post))
-                .collect(Collectors.toList()));
-        return imagePaths;
+    private boolean isMemberTripParticipants(List<Participant> participants, Long memberId) {
+        return participants.stream().anyMatch(participant ->
+                participant.getMember().getId().equals(memberId)
+                        && participant.getType().equals(ParticipantType.ACCEPTED));
     }
 
     private Location getNewlyLocation(Trip trip, String locationName) {
@@ -75,9 +69,17 @@ public class PostService {
         return optionalLocation.get();
     }
 
-    private boolean isMemberTripParticipants(List<Participant> participants, Long memberId) {
-        return participants.stream()
-                .anyMatch(participant -> participant.getMember().getId().equals(memberId));
+    private List<String> savePostImages(Post post, List<MultipartFile> images) {
+        List<String> imagePaths = imageManager.uploadImages(images, IMAGE_DOMAIN);
+        postImageRepository.saveAll(imagePaths.stream()
+                .map(path -> PostImage.of(path, post))
+                .collect(Collectors.toList()));
+        return imagePaths;
+    }
+
+    private void updateLocationThumbnail(Location location, String imagePath) {
+        location.setThumbnailPath(imagePath);
+        locationRepository.save(location);
     }
 
     @Transactional
