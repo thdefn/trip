@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class ImageUploader {
+public class ImageManager {
     private final FileUploadClient fileUploadClient;
     public static final List<String> ALLOW_IMAGE_CODES = List.of(".jpeg", ".png", ".jpg", ".gif");
 
@@ -23,5 +23,9 @@ public class ImageUploader {
                                         Objects.requireNonNull(multipartFile.getOriginalFilename()))))
                 .map(multipartFile -> fileUploadClient.upload(multipartFile, domain))
                 .collect(Collectors.toList());
+    }
+
+    public void deleteImages(List<String> imagePaths){
+        imagePaths.forEach(fileUploadClient::delete);
     }
 }

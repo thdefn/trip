@@ -12,15 +12,15 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @Getter
-public class CreatePostDto {
+public class PostDetailDto {
     private Long id;
     private String content;
     private List<String> imagePaths;
     private Long locationId;
     private String locationName;
 
-    public static CreatePostDto of(Post post, List<String> imagePaths) {
-        return CreatePostDto.builder()
+    public static PostDetailDto of(Post post, List<String> imagePaths) {
+        return PostDetailDto.builder()
                 .id(post.getId())
                 .content(post.getContent())
                 .imagePaths(imagePaths)

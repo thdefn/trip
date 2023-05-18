@@ -5,12 +5,12 @@ import com.trip.diary.domain.repository.LocationRepository;
 import com.trip.diary.domain.repository.PostImageRepository;
 import com.trip.diary.domain.repository.PostRepository;
 import com.trip.diary.domain.repository.TripRepository;
-import com.trip.diary.dto.CreatePostDto;
+import com.trip.diary.dto.PostDetailDto;
 import com.trip.diary.dto.CreatePostForm;
 import com.trip.diary.dto.UpdatePostForm;
 import com.trip.diary.exception.PostException;
 import com.trip.diary.exception.TripException;
-import com.trip.diary.util.ImageUploader;
+import com.trip.diary.util.ImageManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,11 +30,11 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
     private final TripRepository tripRepository;
-    private final ImageUploader imageUploader;
+    private final ImageManager imageManager;
     private final static String IMAGE_DOMAIN = "post";
 
     @Transactional
-    public CreatePostDto create(Long tripId, CreatePostForm form, List<MultipartFile> images, Member member) {
+    public PostDetailDto create(Long tripId, CreatePostForm form, List<MultipartFile> images, Member member) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
 
@@ -43,24 +43,23 @@ public class PostService {
         }
 
         Location location = getNewlyLocation(trip, form.getLocation());
-        List<String> imagePaths = imageUploader.uploadImages(images, IMAGE_DOMAIN);
-
-        location.setThumbnailPath(imagePaths.get(0));
-        locationRepository.save(location);
-        return CreatePostDto.of(
-                savePostAndPostImages(form.getContent(), imagePaths, location, trip),
-                imagePaths);
+        Post savedPost = postRepository.save(Post.of(form, location, trip, member));
+        List<String> imagePaths = savePostImages(savedPost, images);
+        updateLocationThumbnail(location, imagePaths.get(0));
+        return PostDetailDto.of(savedPost, imagePaths);
     }
 
-    private Post savePostAndPostImages(String content, List<String> imagePaths, Location location, Trip trip) {
-        Post savedPost = postRepository.save(Post.builder()
-                .content(content)
-                .location(location)
-                .trip(trip).build());
+    private void updateLocationThumbnail(Location location, String imagePath) {
+        location.setThumbnailPath(imagePath);
+        locationRepository.save(location);
+    }
+
+    private List<String> savePostImages(Post post, List<MultipartFile> images) {
+        List<String> imagePaths = imageManager.uploadImages(images, IMAGE_DOMAIN);
         postImageRepository.saveAll(imagePaths.stream()
-                .map(path -> PostImage.of(path, savedPost))
+                .map(path -> PostImage.of(path, post))
                 .collect(Collectors.toList()));
-        return savedPost;
+        return imagePaths;
     }
 
     private Location getNewlyLocation(Trip trip, String locationName) {
@@ -77,11 +76,12 @@ public class PostService {
     }
 
     private boolean isMemberTripParticipants(List<Participant> participants, Long memberId) {
-        return participants.stream().anyMatch(participant -> participant.getMember().getId().equals(memberId));
+        return participants.stream()
+                .anyMatch(participant -> participant.getMember().getId().equals(memberId));
     }
 
     @Transactional
-    public CreatePostDto update(Long postId,
+    public PostDetailDto update(Long postId,
                                 UpdatePostForm form, List<MultipartFile> images, Member member) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(NOT_FOUND_POST));
@@ -90,13 +90,18 @@ public class PostService {
             throw new PostException(NOT_POST_OWNER);
         }
 
-        postImageRepository.deleteAllInBatch(post.getImages());
+        deleteOldPostImages(post);
 
         post.setContent(form.getContent());
-        List<String> imagePaths = imageUploader.uploadImages(images, IMAGE_DOMAIN);
-        postImageRepository.saveAll(imagePaths.stream()
-                .map(path -> PostImage.of(path, post))
+        List<String> imagePaths = savePostImages(post, images);
+        updateLocationThumbnail(post.getLocation(), imagePaths.get(0));
+        return PostDetailDto.of(postRepository.save(post), imagePaths);
+    }
+
+    private void deleteOldPostImages(Post post) {
+        imageManager.deleteImages(post.getImages().stream()
+                .map(PostImage::getImagePath)
                 .collect(Collectors.toList()));
-        return CreatePostDto.of(postRepository.save(post), imagePaths);
+        postImageRepository.deleteAllInBatch(post.getImages());
     }
 }

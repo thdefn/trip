@@ -1,6 +1,6 @@
 package com.trip.diary.controller;
 
-import com.trip.diary.dto.CreatePostDto;
+import com.trip.diary.dto.PostDetailDto;
 import com.trip.diary.dto.CreatePostForm;
 import com.trip.diary.dto.UpdatePostForm;
 import com.trip.diary.security.MemberPrincipal;
@@ -21,7 +21,7 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping("/trips/{tripId}/posts")
-    private ResponseEntity<CreatePostDto> createPost(@PathVariable Long tripId,
+    private ResponseEntity<PostDetailDto> createPost(@PathVariable Long tripId,
                                                      @RequestPart List<MultipartFile> images,
                                                      @RequestPart @Valid CreatePostForm form,
                                                      @AuthenticationPrincipal MemberPrincipal principal) {
@@ -29,7 +29,7 @@ public class PostController {
     }
 
     @PutMapping("/trips/posts/{postId}")
-    private ResponseEntity<CreatePostDto> updatePost(@PathVariable Long postId,
+    private ResponseEntity<PostDetailDto> updatePost(@PathVariable Long postId,
                                                      @RequestPart List<MultipartFile> images,
                                                      @RequestPart @Valid UpdatePostForm form,
                                                      @AuthenticationPrincipal MemberPrincipal principal) {

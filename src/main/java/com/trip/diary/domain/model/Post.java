@@ -1,5 +1,6 @@
 package com.trip.diary.domain.model;
 
+import com.trip.diary.dto.CreatePostForm;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -38,5 +39,14 @@ public class Post extends BaseEntity {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public static Post of(CreatePostForm form, Location location, Trip trip, Member member){
+        return Post.builder()
+                .content(form.getContent())
+                .member(member)
+                .location(location)
+                .trip(trip)
+                .build();
     }
 }
