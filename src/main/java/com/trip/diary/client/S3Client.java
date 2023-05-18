@@ -3,14 +3,20 @@ package com.trip.diary.client;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.trip.diary.util.FileUtil;
+import com.trip.diary.exception.ErrorCode;
+import com.trip.diary.exception.FileException;
+import com.trip.diary.util.FilePathUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
 
+@Component
+@Slf4j
 @RequiredArgsConstructor
 public class S3Client implements FileUploadClient {
 
@@ -19,12 +25,16 @@ public class S3Client implements FileUploadClient {
     private final AmazonS3 amazonS3;
 
     @Override
-    public String upload(MultipartFile multipartFile, String domain) throws IOException {
-        String fileName = FileUtil.createFileName(multipartFile.getOriginalFilename());
-        String filePath = FileUtil.createFilePath(domain);
-        File file = new File(filePath + fileName);
-        multipartFile.transferTo(file);
-        amazonS3.putObject(new PutObjectRequest(bucket, file.getPath(), file));
+    public String upload(MultipartFile multipartFile, String domain) {
+        String fileName = FilePathUtil.createFileName(multipartFile.getOriginalFilename());
+        String filePath = FilePathUtil.createFilePath(domain);
+        try {
+            File file = File.createTempFile("image", fileName);
+            multipartFile.transferTo(file);
+            amazonS3.putObject(new PutObjectRequest(bucket, filePath + fileName, file));
+        } catch (IOException e) {
+            throw new FileException(ErrorCode.UPLOAD_FAILED);
+        }
         return filePath + fileName;
     }
 
