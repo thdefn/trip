@@ -9,10 +9,12 @@ import com.trip.diary.domain.type.ParticipantType;
 import com.trip.diary.dto.CreatePostForm;
 import com.trip.diary.dto.PostDetailDto;
 import com.trip.diary.dto.UpdatePostForm;
+import com.trip.diary.event.dto.ImageDeleteEvent;
 import com.trip.diary.exception.PostException;
 import com.trip.diary.exception.TripException;
 import com.trip.diary.util.ImageManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +33,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
     private final TripRepository tripRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
     private final ImageManager imageManager;
     private final static String IMAGE_DOMAIN = "post";
 
@@ -101,9 +104,30 @@ public class PostService {
     }
 
     private void deleteOldPostImages(Post post) {
-        imageManager.deleteImages(post.getImages().stream()
-                .map(PostImage::getImagePath)
-                .collect(Collectors.toList()));
         postImageRepository.deleteAllInBatch(post.getImages());
+        applicationEventPublisher.publishEvent(
+                new ImageDeleteEvent(post.getImages().stream()
+                        .map(PostImage::getImagePath)
+                        .collect(Collectors.toList())));
+    }
+
+    @Transactional
+    public void delete(Long postId, Member member){
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(NOT_FOUND_POST));
+
+        if (!Objects.equals(post.getMember().getId(), member.getId())) {
+            throw new PostException(NOT_POST_OWNER);
+        }
+
+        if(post.getLocation().getPosts().size() == 1){
+            locationRepository.delete(post.getLocation());
+        }
+        postRepository.delete(post);
+
+        applicationEventPublisher.publishEvent(
+                new ImageDeleteEvent(post.getImages().stream()
+                        .map(PostImage::getImagePath)
+                        .collect(Collectors.toList())));
     }
 }

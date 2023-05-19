@@ -22,6 +22,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -111,6 +112,22 @@ class PostControllerTest {
                             request.setMethod("PUT");
                             return request;
                         })
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("여행 기록 삭제 성공")
+    void deletePostTest_success() throws Exception {
+        //given
+        //when
+        //then
+        mockMvc.perform(delete("/trips/posts/{postId}", 1L)
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+
                 )
                 .andDo(print())
                 .andExpect(status().isOk());

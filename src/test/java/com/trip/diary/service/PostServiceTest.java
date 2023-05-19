@@ -20,6 +20,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,6 +46,9 @@ class PostServiceTest {
 
     @Mock
     private PostImageRepository postImageRepository;
+
+    @Mock
+    private ApplicationEventPublisher applicationEventPublisher;
 
     @Mock
     private TripRepository tripRepository;
@@ -108,7 +112,7 @@ class PostServiceTest {
 
     @Test
     @DisplayName("여행 기록 생성 성공")
-    void create_success() {
+    void createTest_success() {
         //given
         CreatePostForm form = CreatePostForm.builder()
                 .content("제주도 도착입니당")
@@ -154,7 +158,7 @@ class PostServiceTest {
 
     @Test
     @DisplayName("여행 기록 생성 성공 - 이전 로케이션이 없을때")
-    void create_successWhenOptionalLocationIsEmpty() {
+    void createTest_successWhenOptionalLocationIsEmpty() {
         //given
         CreatePostForm form = CreatePostForm.builder()
                 .content("제주도로 출발입니당")
@@ -195,7 +199,7 @@ class PostServiceTest {
 
     @Test
     @DisplayName("여행 기록 생성 성공 - 직전 로케이션의 이름이 현재 위치와 다를 때")
-    void create_successWhenPreviousLocationNameIsDifferent() {
+    void createTest_successWhenPreviousLocationNameIsDifferent() {
         //given
         CreatePostForm form = CreatePostForm.builder()
                 .content("진짜맛있다")
@@ -236,7 +240,7 @@ class PostServiceTest {
 
     @Test
     @DisplayName("여행 기록 생성 실패 - 해당 여행 기록장 없음")
-    void create_failWhenNotFoundTrip() {
+    void createTest_failWhenNotFoundTrip() {
         //given
         CreatePostForm form = CreatePostForm.builder()
                 .content("제주도 도착입니당")
@@ -252,7 +256,7 @@ class PostServiceTest {
 
     @Test
     @DisplayName("여행 기록 생성 실패 - 유저가 여행 기록장에 대한 참여자가 아님")
-    void create_failWhenNotAuthorityWriteTrip() {
+    void createTest_failWhenNotAuthorityWriteTrip() {
         //given
         CreatePostForm form = CreatePostForm.builder()
                 .content("제주도 도착입니당")
@@ -286,7 +290,7 @@ class PostServiceTest {
 
     @Test
     @DisplayName("여행 기록 수정 성공")
-    void update_success() {
+    void updateTest_success() {
         //given
         UpdatePostForm form = UpdatePostForm.builder()
                 .content("제주도 도착입니당")
@@ -349,7 +353,7 @@ class PostServiceTest {
 
     @Test
     @DisplayName("여행 기록 수정 실패 - 해당 기록 없음")
-    void update_failWhenNotFoundPost() {
+    void updateTest_failWhenNotFoundPost() {
         //given
         UpdatePostForm form = UpdatePostForm.builder()
                 .content("제주도 도착입니당")
@@ -364,7 +368,7 @@ class PostServiceTest {
 
     @Test
     @DisplayName("여행 기록 수정 실패 - 유저가 기록의 작성자가 아님")
-    void update_failWhenNotPostOwner() {
+    void updateTest_failWhenNotPostOwner() {
         //given
         UpdatePostForm form = UpdatePostForm.builder()
                 .content("제주도 도착입니당")
@@ -396,6 +400,127 @@ class PostServiceTest {
                         .build()));
         //when
         PostException exception = assertThrows(PostException.class, () -> postService.update(1L, form, images, member));
+        //then
+        assertEquals(ErrorCode.NOT_POST_OWNER, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("여행 기록 삭제 성공")
+    void deleteTest_success() {
+        //given
+        Location location = Location.builder()
+                .id(1L)
+                .trip(trip)
+                .name("김포공항")
+                .posts(List.of(Post.builder()
+                                .id(1L)
+                                .build(),
+                        Post.builder()
+                                .id(2L)
+                                .build()
+                ))
+                .thumbnailPath("/post/uuid202030103030.jpg")
+                .build();
+        Post post = Post.builder()
+                .id(1L)
+                .content("김포공항 도착입니당")
+                .location(location)
+                .member(member)
+                .images(List.of(
+                        PostImage.builder()
+                                .id(1L)
+                                .imagePath("/post/uuid202030103030.jpg")
+                                .build(),
+                        PostImage.builder()
+                                .id(2L)
+                                .imagePath("/post/uuid202030103031.jpg")
+                                .build()
+                ))
+                .build();
+
+        given(postRepository.findById(any())).willReturn(
+                Optional.of(post));
+        //when
+        postService.delete(1L, member);
+        //then
+        verify(postRepository, times(1)).delete(any());
+        verify(locationRepository, times(0)).delete(any());
+    }
+
+    @Test
+    @DisplayName("여행 기록 삭제 성공 - 기록의 로케이션에 대한 post가 오직 하나일때")
+    void deleteTest_successWhenLocationHaveOnlyPost() {
+        //given
+        Location location = Location.builder()
+                .id(1L)
+                .trip(trip)
+                .name("김포공항")
+                .posts(List.of(Post.builder()
+                        .id(1L)
+                        .build()))
+                .thumbnailPath("/post/uuid202030103030.jpg")
+                .build();
+        Post post = Post.builder()
+                .id(1L)
+                .content("김포공항 도착입니당")
+                .location(location)
+                .member(member)
+                .images(List.of(
+                        PostImage.builder()
+                                .id(1L)
+                                .imagePath("/post/uuid202030103030.jpg")
+                                .build(),
+                        PostImage.builder()
+                                .id(2L)
+                                .imagePath("/post/uuid202030103031.jpg")
+                                .build()
+                ))
+                .build();
+
+        given(postRepository.findById(any())).willReturn(
+                Optional.of(post));
+        //when
+        postService.delete(1L, member);
+        //then
+        verify(postRepository, times(1)).delete(any());
+        verify(locationRepository, times(1)).delete(any());
+    }
+
+    @Test
+    @DisplayName("여행 기록 삭제 성공 - 해당 기록 없음")
+    void deleteTest_failWhenNotFoundPost() {
+        //given
+        given(postRepository.findById(any())).willReturn(Optional.empty());
+        //when
+        PostException exception = assertThrows(PostException.class, () -> postService.delete(1L, member));
+        //then
+        assertEquals(ErrorCode.NOT_FOUND_POST, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("여행 기록 삭제 성공 - 유저가 작성자가 아님")
+    void deleteTest_failWhenNotPostOwner() {
+        //given
+        Post post = Post.builder()
+                .id(1L)
+                .content("김포공항 도착입니당")
+                .member(participant1)
+                .images(List.of(
+                        PostImage.builder()
+                                .id(1L)
+                                .imagePath("/post/uuid202030103030.jpg")
+                                .build(),
+                        PostImage.builder()
+                                .id(2L)
+                                .imagePath("/post/uuid202030103031.jpg")
+                                .build()
+                ))
+                .build();
+
+        given(postRepository.findById(any())).willReturn(
+                Optional.of(post));
+        //when
+        PostException exception = assertThrows(PostException.class, () -> postService.delete(1L, member));
         //then
         assertEquals(ErrorCode.NOT_POST_OWNER, exception.getErrorCode());
     }
