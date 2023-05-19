@@ -57,7 +57,7 @@ class TripServiceTest {
             .username("qwerty99")
             .nickname("김맹맹")
             .password("1234567")
-            .profileUrl(null)
+            .profilePath(null)
             .phone("01011111111")
             .build();
 
@@ -73,13 +73,13 @@ class TripServiceTest {
             .id(2L)
             .username("abcde")
             .nickname("하이")
-            .profileUrl(null)
+            .profilePath(null)
             .build();
     Member participant2 = Member.builder()
             .id(3L)
             .username("abcde")
             .nickname("하이")
-            .profileUrl(null)
+            .profilePath(null)
             .build();
 
     @Test
@@ -218,7 +218,7 @@ class TripServiceTest {
                 .username("asdfg")
                 .nickname("이땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111112")
                 .build();
 
@@ -318,7 +318,7 @@ class TripServiceTest {
                 .username("1234qwert")
                 .nickname("오땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111114")
                 .build();
 
@@ -362,7 +362,7 @@ class TripServiceTest {
                 .username("1234qwert")
                 .nickname("오땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111114")
                 .build();
 
@@ -481,7 +481,7 @@ class TripServiceTest {
                 .username("1234qwert")
                 .nickname("오땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111114")
                 .build();
 
@@ -523,7 +523,7 @@ class TripServiceTest {
                 .username("1234qwert")
                 .nickname("오땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111114")
                 .build();
 
@@ -611,7 +611,7 @@ class TripServiceTest {
                 .username("1234qwert")
                 .nickname("오땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111114")
                 .build();
 
@@ -649,7 +649,7 @@ class TripServiceTest {
                 .username("1234qwert")
                 .nickname("오땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111114")
                 .build();
 
@@ -741,7 +741,7 @@ class TripServiceTest {
                 .username("1234qwert")
                 .nickname("오땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111114")
                 .build();
 

@@ -24,7 +24,7 @@ public class ParticipantDto {
                 .id(participant.getMember().getId())
                 .nickname(isReader ? participant.getMember().getNickname() + "(나)"
                         : participant.getMember().getNickname())
-                .profileUrl(participant.getMember().getProfileUrl())
+                .profileUrl(participant.getMember().getProfilePath())
                 .isAccepted(participant.getType().equals(ParticipantType.ACCEPTED))
                 .isReader(isReader)
                 .build();

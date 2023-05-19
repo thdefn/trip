@@ -66,3 +66,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODQyO
 DELETE http://localhost:8080/trips/2/members/8
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0aGRlZm4iLCJpYXQiOjE2ODQyODcyMzEsImV4cCI6MTY4NDI5MDgzMX0.akJCM7hZngOavguuvcND8L8NpdKtWZOgDZg-RJInG_w
+
+
+### 포스트 생성
+POST http://localhost:8080/trips/2/posts

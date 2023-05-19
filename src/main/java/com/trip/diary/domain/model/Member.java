@@ -30,7 +30,7 @@ public class Member extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String nickname;
 
-    private String profileUrl;
+    private String profilePath;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
