@@ -128,9 +128,7 @@ public class TripService {
         Member target = memberRepository.findById(targetId)
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER));
 
-        if (!isMemberAcceptedTripParticipants(trip, member)) {
-            throw new TripException(NOT_AUTHORITY_WRITE_TRIP);
-        }
+        validationMemberHaveWriteAuthority(trip, member);
 
         applicationEventPublisher.publishEvent(new TripInviteEvent(Set.of(targetId), trip.getId()));
 
@@ -145,8 +143,10 @@ public class TripService {
                 .build());
     }
 
-    private boolean isMemberAcceptedTripParticipants(Trip trip, Member member) {
-        return participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED);
+    private void validationMemberHaveWriteAuthority(Trip trip, Member member) {
+        if (!participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED)) {
+            throw new TripException(NOT_AUTHORITY_WRITE_TRIP);
+        }
     }
 
     @Transactional

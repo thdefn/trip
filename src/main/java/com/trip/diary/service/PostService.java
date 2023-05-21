@@ -135,12 +135,8 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    private boolean isMemberAcceptedTripParticipants(Trip trip, Member member) {
-        return participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED);
-    }
-
     private void validationMemberHaveReadAuthority(Trip trip, Member member) {
-        if (trip.isPrivate() && !isMemberAcceptedTripParticipants(trip, member)) {
+        if (trip.isPrivate() && !participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED)) {
             throw new TripException(NOT_AUTHORITY_READ_TRIP);
         }
     }
@@ -160,7 +156,7 @@ public class PostService {
     }
 
     private void validationMemberHaveWriteAuthority(Trip trip, Member member) {
-        if (!isMemberAcceptedTripParticipants(trip, member)) {
+        if (!participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED)) {
             throw new TripException(NOT_AUTHORITY_WRITE_TRIP);
         }
     }

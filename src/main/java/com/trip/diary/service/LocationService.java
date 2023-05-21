@@ -1,12 +1,10 @@
 package com.trip.diary.service;
 
 import com.trip.diary.domain.model.Member;
-import com.trip.diary.domain.model.Participant;
 import com.trip.diary.domain.model.Trip;
 import com.trip.diary.domain.repository.LocationRepository;
 import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.TripRepository;
-import com.trip.diary.domain.type.ParticipantType;
 import com.trip.diary.dto.LocationDetailDto;
 import com.trip.diary.dto.LocationDto;
 import com.trip.diary.exception.ErrorCode;
@@ -34,9 +32,7 @@ public class LocationService {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new TripException(ErrorCode.NOT_FOUND_TRIP));
 
-        if (trip.isPrivate() && !isMemberAcceptedTripParticipants(trip, member)) {
-            throw new TripException(NOT_AUTHORITY_READ_TRIP);
-        }
+        validationMemberHaveReadAuthority(trip, member);
 
         return locationRepository.findByTripOrderByIdDesc(trip)
                 .stream().map(LocationDetailDto::of).collect(Collectors.toList());
@@ -47,15 +43,16 @@ public class LocationService {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new TripException(ErrorCode.NOT_FOUND_TRIP));
 
-        if (trip.isPrivate() && !isMemberAcceptedTripParticipants(trip, member)) {
-            throw new TripException(NOT_AUTHORITY_READ_TRIP);
-        }
+        validationMemberHaveReadAuthority(trip, member);
 
         return locationRepository.findByTripOrderByIdDesc(trip)
                 .stream().map(LocationDto::of).collect(Collectors.toList());
     }
 
-    private boolean isMemberAcceptedTripParticipants(Trip trip, Member member) {
-        return participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED);
+    private void validationMemberHaveReadAuthority(Trip trip, Member member) {
+        if (trip.isPrivate() && !participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED)) {
+            throw new TripException(NOT_AUTHORITY_READ_TRIP);
+        }
     }
+
 }
