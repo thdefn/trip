@@ -1,10 +1,7 @@
 package com.trip.diary.service;
 
 import com.trip.diary.domain.model.*;
-import com.trip.diary.domain.repository.LocationRepository;
-import com.trip.diary.domain.repository.PostImageRepository;
-import com.trip.diary.domain.repository.PostRepository;
-import com.trip.diary.domain.repository.TripRepository;
+import com.trip.diary.domain.repository.*;
 import com.trip.diary.domain.type.ParticipantType;
 import com.trip.diary.dto.CreatePostForm;
 import com.trip.diary.dto.PostDetailDto;
@@ -33,6 +30,8 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
     private final TripRepository tripRepository;
+
+    private final PostLikeRedisRepository postLikeRedisRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final ImageManager imageManager;
     private final static String IMAGE_DOMAIN = "post";
@@ -42,21 +41,13 @@ public class PostService {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
 
-        if (!isMemberTripParticipants(trip.getParticipants(), member.getId())) {
-            throw new TripException(NOT_AUTHORITY_WRITE_TRIP);
-        }
+        validationMemberHaveWriteAuthority(trip, member.getId());
 
         Location location = getNewlyLocation(trip, form.getLocation());
         Post savedPost = postRepository.save(Post.of(form, location, trip, member));
         List<String> imagePaths = savePostImages(savedPost, images);
         updateLocationThumbnail(location, imagePaths.get(0));
         return PostDetailDto.of(savedPost, imagePaths, member.getId());
-    }
-
-    private boolean isMemberTripParticipants(List<Participant> participants, Long memberId) {
-        return participants.stream().anyMatch(participant ->
-                participant.getMember().getId().equals(memberId)
-                        && participant.getType().equals(ParticipantType.ACCEPTED));
     }
 
     private Location getNewlyLocation(Trip trip, String locationName) {
@@ -136,12 +127,42 @@ public class PostService {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
 
-        if (trip.isPrivate() && !isMemberTripParticipants(trip.getParticipants(), member.getId())) {
-            throw new TripException(NOT_AUTHORITY_READ_TRIP);
-        }
+        validationMemberHaveReadAuthority(trip, member.getId());
 
         return postRepository.findByLocation_Id(locationId).stream()
                 .map(post -> PostDetailDto.of(post, member.getId()))
                 .collect(Collectors.toList());
+    }
+
+    private void validationMemberHaveReadAuthority(Trip trip, Long memberId) {
+        if (trip.isPrivate() && !isMemberTripParticipants(trip.getParticipants(), memberId)) {
+            throw new TripException(NOT_AUTHORITY_READ_TRIP);
+        }
+    }
+
+    @Transactional
+    public void like(Long postId, Member member) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(NOT_FOUND_POST));
+
+        validationMemberHaveWriteAuthority(post.getTrip(), member.getId());
+
+        if (postLikeRedisRepository.existsByPostIdAndUserId(postId, member.getId())) {
+            postLikeRedisRepository.delete(postId, member.getId());
+        } else {
+            postLikeRedisRepository.save(postId, member.getId());
+        }
+    }
+
+    private void validationMemberHaveWriteAuthority(Trip trip, Long memberId) {
+        if (!isMemberTripParticipants(trip.getParticipants(), memberId)) {
+            throw new TripException(NOT_AUTHORITY_WRITE_TRIP);
+        }
+    }
+
+    private boolean isMemberTripParticipants(List<Participant> participants, Long memberId) {
+        return participants.stream().anyMatch(participant ->
+                participant.getMember().getId().equals(memberId)
+                        && participant.getType().equals(ParticipantType.ACCEPTED));
     }
 }

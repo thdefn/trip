@@ -43,6 +43,13 @@ public class PostController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/trips/posts/{postId}/like")
+    private ResponseEntity<Void> likePost(@PathVariable Long postId,
+                                          @AuthenticationPrincipal MemberPrincipal principal) {
+        postService.like(postId, principal.getMember());
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/trips/{tripId}/locations/{locationId}")
     private ResponseEntity<List<PostDetailDto>> readPostsByLocation(@PathVariable Long tripId,
                                                                     @PathVariable Long locationId,
