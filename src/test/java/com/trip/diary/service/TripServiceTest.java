@@ -57,7 +57,7 @@ class TripServiceTest {
             .username("qwerty99")
             .nickname("김맹맹")
             .password("1234567")
-            .profileUrl(null)
+            .profilePath(null)
             .phone("01011111111")
             .build();
 
@@ -73,13 +73,13 @@ class TripServiceTest {
             .id(2L)
             .username("abcde")
             .nickname("하이")
-            .profileUrl(null)
+            .profilePath(null)
             .build();
     Member participant2 = Member.builder()
             .id(3L)
             .username("abcde")
             .nickname("하이")
-            .profileUrl(null)
+            .profilePath(null)
             .build();
 
     @Test
@@ -218,7 +218,7 @@ class TripServiceTest {
                 .username("asdfg")
                 .nickname("이땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111112")
                 .build();
 
@@ -264,6 +264,7 @@ class TripServiceTest {
                                 .build()))
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(participantRepository.existsByTripAndMember(any(), any())).willReturn(true);
         //when
         List<ParticipantDto> result = tripService.getTripParticipants(1L, member);
         //then
@@ -299,6 +300,7 @@ class TripServiceTest {
                                 .build()))
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(participantRepository.existsByTripAndMember(any(), any())).willReturn(true);
         //when
         List<ParticipantDto> result = tripService.getTripParticipants(1L, participant1);
         //then
@@ -318,7 +320,7 @@ class TripServiceTest {
                 .username("1234qwert")
                 .nickname("오땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111114")
                 .build();
 
@@ -362,7 +364,7 @@ class TripServiceTest {
                 .username("1234qwert")
                 .nickname("오땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111114")
                 .build();
 
@@ -387,6 +389,7 @@ class TripServiceTest {
                                 .build()))
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(participantRepository.existsByTripAndMember(any(), any())).willReturn(false);
         //when
         TripException exception = assertThrows(TripException.class,
                 () -> tripService.getTripParticipants(1L, member));
@@ -481,7 +484,7 @@ class TripServiceTest {
                 .username("1234qwert")
                 .nickname("오땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111114")
                 .build();
 
@@ -507,6 +510,7 @@ class TripServiceTest {
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(target));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
         given(participantRepository.existsByTripAndMember(any(), any())).willReturn(false);
         //when
         tripService.invite(1L, 4L, member);
@@ -523,7 +527,7 @@ class TripServiceTest {
                 .username("1234qwert")
                 .nickname("오땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111114")
                 .build();
 
@@ -549,6 +553,7 @@ class TripServiceTest {
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(target));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
         given(participantRepository.existsByTripAndMember(any(), any())).willReturn(true);
         //when
         TripException exception = assertThrows(TripException.class,
@@ -611,7 +616,7 @@ class TripServiceTest {
                 .username("1234qwert")
                 .nickname("오땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111114")
                 .build();
 
@@ -633,6 +638,7 @@ class TripServiceTest {
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(target));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(false);
         //when
         TripException exception = assertThrows(TripException.class,
                 () -> tripService.invite(1L, 4L, member));
@@ -649,7 +655,7 @@ class TripServiceTest {
                 .username("1234qwert")
                 .nickname("오땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111114")
                 .build();
 
@@ -741,7 +747,7 @@ class TripServiceTest {
                 .username("1234qwert")
                 .nickname("오땡땡")
                 .password("1234567")
-                .profileUrl(null)
+                .profilePath(null)
                 .phone("01011111114")
                 .build();
 

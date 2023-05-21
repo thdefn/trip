@@ -40,7 +40,7 @@ public class MemberDocument {
         return MemberDocument.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
-                .profileUrl(member.getProfileUrl())
+                .profileUrl(member.getProfilePath())
                 .build();
     }
 
