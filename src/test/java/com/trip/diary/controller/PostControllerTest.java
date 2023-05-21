@@ -178,4 +178,19 @@ class PostControllerTest {
         ;
     }
 
+    @Test
+    @WithMockCustomUser
+    @DisplayName("좋아요, 좋아요 취소 성공")
+    void likePostTest_success() throws Exception {
+        //given
+        //when
+        //then
+        mockMvc.perform(put("/trips/posts/{postId}/like", 1L)
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
 }

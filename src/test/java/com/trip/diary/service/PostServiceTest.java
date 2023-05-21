@@ -48,6 +48,9 @@ class PostServiceTest {
     private ParticipantRepository participantRepository;
 
     @Mock
+    private PostLikeRedisRepository postLikeRedisRepository;
+
+    @Mock
     private ApplicationEventPublisher applicationEventPublisher;
 
     @Mock
@@ -526,5 +529,93 @@ class PostServiceTest {
         PostException exception = assertThrows(PostException.class, () -> postService.delete(1L, member));
         //then
         assertEquals(ErrorCode.NOT_POST_OWNER, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("좋아요 성공 - 생성")
+    void like_success() {
+        //given
+        given(postRepository.findById(anyLong()))
+                .willReturn(Optional.of(Post.builder()
+                        .id(1L)
+                        .content("김포공항 도착입니당")
+                        .member(participant1)
+                        .images(List.of(
+                                PostImage.builder()
+                                        .id(1L)
+                                        .imagePath("/post/uuid202030103030.jpg")
+                                        .build(),
+                                PostImage.builder()
+                                        .id(2L)
+                                        .imagePath("/post/uuid202030103031.jpg")
+                                        .build()
+                        ))
+                        .build())
+                );
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
+        given(postLikeRedisRepository.existsByPostIdAndUserId(anyLong(), anyLong()))
+                .willReturn(false);
+        //when
+        postService.like(1L, member);
+        //then
+        verify(postLikeRedisRepository, times(1)).save(anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("좋아요 성공 - 취소")
+    void like_successCancel() {
+        //given
+        given(postRepository.findById(anyLong()))
+                .willReturn(Optional.of(Post.builder()
+                        .id(1L)
+                        .content("김포공항 도착입니당")
+                        .member(participant1)
+                        .images(List.of(
+                                PostImage.builder()
+                                        .id(1L)
+                                        .imagePath("/post/uuid202030103030.jpg")
+                                        .build(),
+                                PostImage.builder()
+                                        .id(2L)
+                                        .imagePath("/post/uuid202030103031.jpg")
+                                        .build()
+                        ))
+                        .build())
+                );
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
+        given(postLikeRedisRepository.existsByPostIdAndUserId(anyLong(), anyLong()))
+                .willReturn(true);
+        //when
+        postService.like(1L, member);
+        //then
+        verify(postLikeRedisRepository, times(1)).delete(anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("좋아요 실패 - 쓰기 권한 없음")
+    void like_failWhenNotAuthorityWriteTrip() {
+        //given
+        given(postRepository.findById(anyLong()))
+                .willReturn(Optional.of(Post.builder()
+                        .id(1L)
+                        .content("김포공항 도착입니당")
+                        .member(participant1)
+                        .images(List.of(
+                                PostImage.builder()
+                                        .id(1L)
+                                        .imagePath("/post/uuid202030103030.jpg")
+                                        .build(),
+                                PostImage.builder()
+                                        .id(2L)
+                                        .imagePath("/post/uuid202030103031.jpg")
+                                        .build()
+                        ))
+                        .build())
+                );
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(false);
+        //when
+        TripException exception = assertThrows(TripException.class, () -> postService.like(1L, member));
+        //then
+        assertEquals(ErrorCode.NOT_AUTHORITY_WRITE_TRIP, exception.getErrorCode());
     }
 }
