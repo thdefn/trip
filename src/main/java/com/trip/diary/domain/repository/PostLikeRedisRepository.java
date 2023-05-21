@@ -2,9 +2,11 @@ package com.trip.diary.domain.repository;
 
 import com.trip.diary.client.RedisClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Slf4j
 @RequiredArgsConstructor
 public class PostLikeRedisRepository {
     private final RedisClient redisClient;
@@ -22,7 +24,7 @@ public class PostLikeRedisRepository {
         redisClient.removeValueToSet(POST_LIKE_KEY + postId, String.valueOf(userId));
     }
 
-    public Long countByPostId(Long postId){
+    public Long countByPostId(Long postId) {
         return redisClient.getSizeOfSet(POST_LIKE_KEY + postId);
     }
 }

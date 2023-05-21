@@ -6,6 +6,8 @@ import com.trip.diary.dto.CreatePostForm;
 import com.trip.diary.dto.PostDetailDto;
 import com.trip.diary.dto.UpdatePostForm;
 import com.trip.diary.event.dto.ImageDeleteEvent;
+import com.trip.diary.exception.ErrorCode;
+import com.trip.diary.exception.LocationException;
 import com.trip.diary.exception.PostException;
 import com.trip.diary.exception.TripException;
 import com.trip.diary.util.ImageManager;
@@ -92,7 +94,10 @@ public class PostService {
         post.setContent(form.getContent());
         List<String> imagePaths = savePostImages(post, images);
         updateLocationThumbnail(post.getLocation(), imagePaths.get(0));
-        return PostDetailDto.of(postRepository.save(post), imagePaths, member.getId());
+        return PostDetailDto.of(postRepository.save(post), imagePaths,
+                postLikeRedisRepository.countByPostId(postId),
+                postLikeRedisRepository.existsByPostIdAndUserId(post.getId(), member.getId()),
+                member.getId());
     }
 
     private void deleteOldPostImages(Post post) {
@@ -124,14 +129,17 @@ public class PostService {
     }
 
     @Transactional
-    public List<PostDetailDto> readPostsByLocation(Long tripId, Long locationId, Member member) {
-        Trip trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
+    public List<PostDetailDto> readPostsByLocation(Long locationId, Member member) {
+        Location location = locationRepository.findById(locationId)
+                .orElseThrow(() -> new LocationException(ErrorCode.NOT_FOUND_LOCATION));
 
-        validationMemberHaveReadAuthority(trip, member);
+        validationMemberHaveReadAuthority(location.getTrip(), member);
 
-        return postRepository.findByLocation_Id(locationId).stream()
-                .map(post -> PostDetailDto.of(post, member.getId()))
+        return location.getPosts().stream()
+                .map(post -> PostDetailDto.of(post,
+                        postLikeRedisRepository.countByPostId(post.getId()),
+                        postLikeRedisRepository.existsByPostIdAndUserId(post.getId(), member.getId()),
+                        member.getId()))
                 .collect(Collectors.toList());
     }
 

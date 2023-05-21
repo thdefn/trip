@@ -50,11 +50,10 @@ public class PostController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/trips/{tripId}/locations/{locationId}")
-    private ResponseEntity<List<PostDetailDto>> readPostsByLocation(@PathVariable Long tripId,
-                                                                    @PathVariable Long locationId,
+    @GetMapping("/trips/locations/{locationId}")
+    private ResponseEntity<List<PostDetailDto>> readPostsByLocation(@PathVariable Long locationId,
                                                                     @AuthenticationPrincipal MemberPrincipal principal) {
         return ResponseEntity.ok(
-                postService.readPostsByLocation(tripId, locationId, principal.getMember()));
+                postService.readPostsByLocation(locationId, principal.getMember()));
     }
 }

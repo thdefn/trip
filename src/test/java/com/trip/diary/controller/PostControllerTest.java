@@ -62,6 +62,7 @@ class PostControllerTest {
                         .locationId(2L)
                         .locationName("제주공항")
                         .authorId(1L)
+                        .likeOfPosts(0L)
                         .authorProfilePath("/profile/basic.jpg")
                         .authorNickname("강아지")
                         .build());
@@ -96,6 +97,7 @@ class PostControllerTest {
                         .imagePaths(List.of("/post/1234567543123.jpg"))
                         .locationId(2L)
                         .locationName("제주공항")
+                        .likeOfPosts(1L)
                         .authorId(1L)
                         .authorProfilePath("/profile/basic.jpg")
                         .authorNickname("강아지")
@@ -138,7 +140,7 @@ class PostControllerTest {
     @DisplayName("로케이션 아이디로 기록 조회 성공")
     void readPostsByLocationTest_success() throws Exception {
         //given
-        given(postService.readPostsByLocation(anyLong(), anyLong(), any()))
+        given(postService.readPostsByLocation(anyLong(), any()))
                 .willReturn(List.of(
                         PostDetailDto.builder()
                                 .id(1L)
@@ -147,6 +149,7 @@ class PostControllerTest {
                                 .locationId(1L)
                                 .locationName("김포공항")
                                 .authorId(1L)
+                                .likeOfPosts(1L)
                                 .authorNickname("지금은새벽(나)")
                                 .authorProfilePath("/profile/basic.jpg")
                                 .isReader(true)
@@ -158,6 +161,7 @@ class PostControllerTest {
                                 .locationId(2L)
                                 .locationName("제주공항")
                                 .authorId(1L)
+                                .likeOfPosts(2L)
                                 .authorNickname("지금은새벽(나)")
                                 .authorProfilePath("/profile/basic.jpg")
                                 .isReader(true)
@@ -165,7 +169,7 @@ class PostControllerTest {
                 ));
         //when
         //then
-        mockMvc.perform(get("/trips/{tripId}/locations/{locationId}", 1L, 1L)
+        mockMvc.perform(get("/trips/locations/{locationId}", 1L)
                         .header("Authorization", TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                 )

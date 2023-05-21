@@ -22,6 +22,6 @@ public class RedisClient {
     }
 
     public Long getSizeOfSet(String key) {
-        return redisTemplate.opsForValue().size(key);
+        return redisTemplate.opsForSet().size(key);
     }
 }

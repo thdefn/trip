@@ -7,6 +7,7 @@ import com.trip.diary.dto.CreatePostForm;
 import com.trip.diary.dto.PostDetailDto;
 import com.trip.diary.dto.UpdatePostForm;
 import com.trip.diary.exception.ErrorCode;
+import com.trip.diary.exception.LocationException;
 import com.trip.diary.exception.PostException;
 import com.trip.diary.exception.TripException;
 import com.trip.diary.util.ImageManager;
@@ -26,8 +27,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
@@ -327,6 +327,9 @@ class PostServiceTest {
                         ))
                         .build()));
 
+        given(postLikeRedisRepository.countByPostId(anyLong()))
+                .willReturn(1L);
+
         given(imageManager.uploadImages(any(), anyString()))
                 .willReturn(List.of("/post/1.jpg",
                         "/post/2.jpg"));
@@ -338,6 +341,9 @@ class PostServiceTest {
                         .location(location)
                         .member(member)
                         .build());
+
+        given(postLikeRedisRepository.existsByPostIdAndUserId(anyLong(), anyLong()))
+                .willReturn(true);
         //when
         PostDetailDto result = postService.update(1L, form, images, member);
         ArgumentCaptor<Post> postCaptor = ArgumentCaptor.forClass(Post.class);
@@ -349,6 +355,7 @@ class PostServiceTest {
         verify(postImageRepository, times(1)).deleteAllInBatch(any());
         verify(locationRepository, times(1)).save(locationCaptor.capture());
         assertEquals(2, result.getImagePaths().size());
+        assertTrue(result.getIsReaderLiked());
         assertEquals("제주도 도착입니당", postCaptor.getValue().getContent());
         assertEquals("김포공항", postCaptor.getValue().getLocation().getName());
         assertEquals(2, postImageCaptor.getValue().size());
@@ -618,4 +625,151 @@ class PostServiceTest {
         //then
         assertEquals(ErrorCode.NOT_AUTHORITY_WRITE_TRIP, exception.getErrorCode());
     }
+
+    @Test
+    @DisplayName("로케이션 별 포스트 조회 성공")
+    void readPostsByLocationTest_success() {
+        //given
+        Trip trip = Trip.builder()
+                .id(1L)
+                .title("임의의 타이틀")
+                .isPrivate(true)
+                .description("임의의 설명")
+                .build();
+        given(locationRepository.findById(anyLong()))
+                .willReturn(Optional.of(
+                        Location.builder()
+                                .trip(trip)
+                                .id(1L)
+                                .name("제주공항")
+                                .thumbnailPath("/posts/1.jpg")
+                                .posts(List.of(
+                                        Post.builder()
+                                                .id(1L)
+                                                .content("제주공항에서 본 고양이 짱귀엽다")
+                                                .location(Location.builder().id(1L).name("제주공항").build())
+                                                .member(member)
+                                                .images(
+                                                        List.of(PostImage.builder()
+                                                                .id(1L)
+                                                                .imagePath("/posts/1.jpg")
+                                                                .build()
+                                                        )
+                                                )
+                                                .build(),
+                                        Post.builder()
+                                                .id(2L)
+                                                .content("제주도 첫끼니는 버거킹..ㅋ")
+                                                .member(participant1)
+                                                .location(Location.builder().id(1L).name("제주공항").build())
+                                                .images(
+                                                        List.of(PostImage.builder()
+                                                                        .id(2L)
+                                                                        .imagePath("/posts/2.jpg")
+                                                                        .build(),
+                                                                PostImage.builder()
+                                                                        .id(2L)
+                                                                        .imagePath("/posts/3.jpg")
+                                                                        .build()
+                                                        )
+                                                )
+                                                .build()
+                                ))
+                                .build()
+                ));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
+        given(postLikeRedisRepository.countByPostId(1L)).willReturn(2L);
+        given(postLikeRedisRepository.countByPostId(2L)).willReturn(0L);
+        given(postLikeRedisRepository.existsByPostIdAndUserId(1L, 1L))
+                .willReturn(true);
+        given(postLikeRedisRepository.existsByPostIdAndUserId(2L, 1L))
+                .willReturn(false);
+        //when
+        List<PostDetailDto> result = postService.readPostsByLocation(1L, member);
+        //then
+        assertEquals(2L, result.get(0).getLikeOfPosts());
+        assertEquals(1L, result.get(0).getId());
+        assertEquals("제주공항에서 본 고양이 짱귀엽다", result.get(0).getContent());
+        assertTrue(result.get(0).getIsReader());
+        assertNotEquals(member.getNickname(), result.get(0).getAuthorNickname());
+        assertEquals(member.getId(), result.get(0).getId());
+        assertTrue(result.get(0).getIsReaderLiked());
+        assertEquals(0L, result.get(1).getLikeOfPosts());
+        assertFalse(result.get(1).getIsReader());
+        assertEquals(participant1.getNickname(), result.get(1).getAuthorNickname());
+        assertEquals(participant1.getId(), result.get(1).getId());
+        assertFalse(result.get(1).getIsReaderLiked());
+    }
+
+    @Test
+    @DisplayName("로케이션 별 포스트 조회 실패 - 해당 로케이션 없음")
+    void deleteTest_failWhenNotFoundLocation() {
+        //given
+        given(locationRepository.findById(any())).willReturn(Optional.empty());
+        //when
+        LocationException exception = assertThrows(LocationException.class,
+                () -> postService.readPostsByLocation(1L, member));
+        //then
+        assertEquals(ErrorCode.NOT_FOUND_LOCATION, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("로케이션 별 포스트 조회 실패 - 여행 기록장에 대한 읽기 권한 없음")
+    void deleteTest_failWhenNotAuthorityReadTrip() {
+        //given
+        Trip trip = Trip.builder()
+                .id(1L)
+                .title("임의의 타이틀")
+                .isPrivate(true)
+                .description("임의의 설명")
+                .build();
+        given(locationRepository.findById(anyLong()))
+                .willReturn(Optional.of(
+                        Location.builder()
+                                .trip(trip)
+                                .id(1L)
+                                .name("제주공항")
+                                .thumbnailPath("/posts/1.jpg")
+                                .posts(List.of(
+                                        Post.builder()
+                                                .id(1L)
+                                                .content("제주공항에서 본 고양이 짱귀엽다")
+                                                .location(Location.builder().id(1L).name("제주공항").build())
+                                                .member(member)
+                                                .images(
+                                                        List.of(PostImage.builder()
+                                                                .id(1L)
+                                                                .imagePath("/posts/1.jpg")
+                                                                .build()
+                                                        )
+                                                )
+                                                .build(),
+                                        Post.builder()
+                                                .id(2L)
+                                                .content("제주도 첫끼니는 버거킹..ㅋ")
+                                                .member(participant1)
+                                                .location(Location.builder().id(1L).name("제주공항").build())
+                                                .images(
+                                                        List.of(PostImage.builder()
+                                                                        .id(2L)
+                                                                        .imagePath("/posts/2.jpg")
+                                                                        .build(),
+                                                                PostImage.builder()
+                                                                        .id(2L)
+                                                                        .imagePath("/posts/3.jpg")
+                                                                        .build()
+                                                        )
+                                                )
+                                                .build()
+                                ))
+                                .build()
+                ));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(false);
+        //when
+        TripException exception = assertThrows(TripException.class,
+                () -> postService.readPostsByLocation(1L, member));
+        //then
+        assertEquals(ErrorCode.NOT_AUTHORITY_READ_TRIP, exception.getErrorCode());
+    }
+
 }
