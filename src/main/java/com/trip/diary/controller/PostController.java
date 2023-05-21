@@ -38,8 +38,16 @@ public class PostController {
 
     @DeleteMapping("/trips/posts/{postId}")
     private ResponseEntity<Void> deletePost(@PathVariable Long postId,
-                                                     @AuthenticationPrincipal MemberPrincipal principal) {
+                                            @AuthenticationPrincipal MemberPrincipal principal) {
         postService.delete(postId, principal.getMember());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/trips/{tripId}/locations/{locationId}")
+    private ResponseEntity<List<PostDetailDto>> readPostsByLocation(@PathVariable Long tripId,
+                                                                    @PathVariable Long locationId,
+                                                                    @AuthenticationPrincipal MemberPrincipal principal) {
+        return ResponseEntity.ok(
+                postService.readPostsByLocation(tripId, locationId, principal.getMember()));
     }
 }

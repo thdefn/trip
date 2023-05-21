@@ -22,9 +22,9 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = PostController.class)
@@ -131,6 +131,51 @@ class PostControllerTest {
                 )
                 .andDo(print())
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("로케이션 아이디로 기록 조회 성공")
+    void readPostsByLocationTest_success() throws Exception {
+        //given
+        given(postService.readPostsByLocation(anyLong(), anyLong(), any()))
+                .willReturn(List.of(
+                        PostDetailDto.builder()
+                                .id(1L)
+                                .content("드디어 여행 시작")
+                                .imagePaths(List.of("/posts/1.jpg", "/posts/2.jpg"))
+                                .locationId(1L)
+                                .locationName("김포공항")
+                                .authorId(1L)
+                                .authorNickname("지금은새벽(나)")
+                                .authorProfilePath("/profile/basic.jpg")
+                                .isReader(true)
+                                .build(),
+                        PostDetailDto.builder()
+                                .id(2L)
+                                .content("제주도에 영원히 살고싶다,,,")
+                                .imagePaths(List.of("/posts/1.jpg", "/posts/2.jpg"))
+                                .locationId(2L)
+                                .locationName("제주공항")
+                                .authorId(1L)
+                                .authorNickname("지금은새벽(나)")
+                                .authorProfilePath("/profile/basic.jpg")
+                                .isReader(true)
+                                .build()
+                ));
+        //when
+        //then
+        mockMvc.perform(get("/trips/{tripId}/locations/{locationId}", 1L, 1L)
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").isNumber())
+                .andExpect(jsonPath("$[0].content").isString())
+                .andExpect(jsonPath("$[0].imagePaths.[0]").isString())
+                .andExpect(jsonPath("$[0].isReader").isBoolean())
+        ;
     }
 
 }

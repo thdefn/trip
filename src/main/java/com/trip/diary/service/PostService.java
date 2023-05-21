@@ -50,7 +50,7 @@ public class PostService {
         Post savedPost = postRepository.save(Post.of(form, location, trip, member));
         List<String> imagePaths = savePostImages(savedPost, images);
         updateLocationThumbnail(location, imagePaths.get(0));
-        return PostDetailDto.of(savedPost, imagePaths);
+        return PostDetailDto.of(savedPost, imagePaths, member.getId());
     }
 
     private boolean isMemberTripParticipants(List<Participant> participants, Long memberId) {
@@ -100,7 +100,7 @@ public class PostService {
         post.setContent(form.getContent());
         List<String> imagePaths = savePostImages(post, images);
         updateLocationThumbnail(post.getLocation(), imagePaths.get(0));
-        return PostDetailDto.of(postRepository.save(post), imagePaths);
+        return PostDetailDto.of(postRepository.save(post), imagePaths, member.getId());
     }
 
     private void deleteOldPostImages(Post post) {
@@ -112,7 +112,7 @@ public class PostService {
     }
 
     @Transactional
-    public void delete(Long postId, Member member){
+    public void delete(Long postId, Member member) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(NOT_FOUND_POST));
 
@@ -120,7 +120,7 @@ public class PostService {
             throw new PostException(NOT_POST_OWNER);
         }
 
-        if(post.getLocation().getPosts().size() == 1){
+        if (post.getLocation().getPosts().size() == 1) {
             locationRepository.delete(post.getLocation());
         }
         postRepository.delete(post);
@@ -129,5 +129,19 @@ public class PostService {
                 new ImageDeleteEvent(post.getImages().stream()
                         .map(PostImage::getImagePath)
                         .collect(Collectors.toList())));
+    }
+
+    @Transactional
+    public List<PostDetailDto> readPostsByLocation(Long tripId, Long locationId, Member member) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
+
+        if (trip.isPrivate() && !isMemberTripParticipants(trip.getParticipants(), member.getId())) {
+            throw new TripException(NOT_AUTHORITY_READ_TRIP);
+        }
+
+        return postRepository.findByLocation_Id(locationId).stream()
+                .map(post -> PostDetailDto.of(post, member.getId()))
+                .collect(Collectors.toList());
     }
 }
