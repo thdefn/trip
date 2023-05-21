@@ -2,6 +2,7 @@ package com.trip.diary.service;
 
 import com.trip.diary.domain.model.*;
 import com.trip.diary.domain.repository.LocationRepository;
+import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.TripRepository;
 import com.trip.diary.domain.type.ParticipantType;
 import com.trip.diary.dto.LocationDetailDto;
@@ -20,6 +21,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 
@@ -27,6 +29,9 @@ import static org.mockito.BDDMockito.given;
 class LocationServiceTest {
     @Mock
     private LocationRepository locationRepository;
+
+    @Mock
+    private ParticipantRepository participantRepository;
 
     @Mock
     private TripRepository tripRepository;
@@ -83,6 +88,7 @@ class LocationServiceTest {
     void readLocationDetailsTest_success() {
         //given
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
         given(locationRepository.findByTripOrderByIdDesc(trip))
                 .willReturn(List.of(
                         Location.builder()
@@ -170,6 +176,7 @@ class LocationServiceTest {
                 .build();
 
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(false);
         //when
         TripException exception = assertThrows(TripException.class, () -> locationService.readLocationDetails(1L, member));
         //then
@@ -181,6 +188,7 @@ class LocationServiceTest {
     void readLocationsTest_success() {
         //given
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
         given(locationRepository.findByTripOrderByIdDesc(trip))
                 .willReturn(List.of(
                         Location.builder()
@@ -262,6 +270,7 @@ class LocationServiceTest {
                 .build();
 
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(false);
         //when
         TripException exception = assertThrows(TripException.class,
                 () -> locationService.readLocations(1L, member));

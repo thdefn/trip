@@ -81,7 +81,7 @@ public class TripService {
 
         List<Participant> participants = trip.getParticipants();
 
-        if (trip.isPrivate() && !isMemberTripParticipants(participants, member.getId())) {
+        if (trip.isPrivate() && !participantRepository.existsByTripAndMember(trip, member)) {
             throw new TripException(ErrorCode.NOT_AUTHORITY_READ_TRIP);
         }
 
@@ -90,10 +90,6 @@ public class TripService {
                 .map(participant ->
                         ParticipantDto.of(participant, member.getId()))
                 .collect(Collectors.toList());
-    }
-
-    private boolean isMemberTripParticipants(List<Participant> participants, Long memberId) {
-        return participants.stream().anyMatch(participant -> participant.getMember().getId().equals(memberId));
     }
 
 
@@ -132,7 +128,7 @@ public class TripService {
         Member target = memberRepository.findById(targetId)
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER));
 
-        if (!isMemberTripParticipants(trip.getParticipants(), member.getId())) {
+        if (!isMemberAcceptedTripParticipants(trip, member)) {
             throw new TripException(NOT_AUTHORITY_WRITE_TRIP);
         }
 
@@ -147,6 +143,10 @@ public class TripService {
                 .trip(trip)
                 .type(PENDING)
                 .build());
+    }
+
+    private boolean isMemberAcceptedTripParticipants(Trip trip, Member member) {
+        return participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED);
     }
 
     @Transactional

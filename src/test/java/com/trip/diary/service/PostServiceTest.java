@@ -1,10 +1,7 @@
 package com.trip.diary.service;
 
 import com.trip.diary.domain.model.*;
-import com.trip.diary.domain.repository.LocationRepository;
-import com.trip.diary.domain.repository.PostImageRepository;
-import com.trip.diary.domain.repository.PostRepository;
-import com.trip.diary.domain.repository.TripRepository;
+import com.trip.diary.domain.repository.*;
 import com.trip.diary.domain.type.ParticipantType;
 import com.trip.diary.dto.CreatePostForm;
 import com.trip.diary.dto.PostDetailDto;
@@ -46,6 +43,9 @@ class PostServiceTest {
 
     @Mock
     private PostImageRepository postImageRepository;
+
+    @Mock
+    private ParticipantRepository participantRepository;
 
     @Mock
     private ApplicationEventPublisher applicationEventPublisher;
@@ -127,6 +127,7 @@ class PostServiceTest {
                 .build();
 
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
         given(locationRepository.findFirstByTripOrderByIdDesc(any()))
                 .willReturn(Optional.of(location));
         given(postRepository.save(any()))
@@ -173,6 +174,7 @@ class PostServiceTest {
                 .build();
 
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
         given(locationRepository.findFirstByTripOrderByIdDesc(any()))
                 .willReturn(Optional.empty());
         given(postRepository.save(any()))
@@ -214,6 +216,7 @@ class PostServiceTest {
                 .build();
 
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
         given(locationRepository.findFirstByTripOrderByIdDesc(any()))
                 .willReturn(Optional.of(location));
         given(postRepository.save(any()))

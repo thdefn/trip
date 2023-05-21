@@ -2,7 +2,6 @@ package com.trip.diary.service;
 
 import com.trip.diary.domain.model.*;
 import com.trip.diary.domain.repository.*;
-import com.trip.diary.domain.type.ParticipantType;
 import com.trip.diary.dto.CreatePostForm;
 import com.trip.diary.dto.PostDetailDto;
 import com.trip.diary.dto.UpdatePostForm;
@@ -21,12 +20,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.trip.diary.domain.type.ParticipantType.ACCEPTED;
 import static com.trip.diary.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
     private final LocationRepository locationRepository;
+    private final ParticipantRepository participantRepository;
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
     private final TripRepository tripRepository;
@@ -41,7 +42,7 @@ public class PostService {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
 
-        validationMemberHaveWriteAuthority(trip, member.getId());
+        validationMemberHaveWriteAuthority(trip, member);
 
         Location location = getNewlyLocation(trip, form.getLocation());
         Post savedPost = postRepository.save(Post.of(form, location, trip, member));
@@ -127,15 +128,19 @@ public class PostService {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
 
-        validationMemberHaveReadAuthority(trip, member.getId());
+        validationMemberHaveReadAuthority(trip, member);
 
         return postRepository.findByLocation_Id(locationId).stream()
                 .map(post -> PostDetailDto.of(post, member.getId()))
                 .collect(Collectors.toList());
     }
 
-    private void validationMemberHaveReadAuthority(Trip trip, Long memberId) {
-        if (trip.isPrivate() && !isMemberTripParticipants(trip.getParticipants(), memberId)) {
+    private boolean isMemberAcceptedTripParticipants(Trip trip, Member member) {
+        return participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED);
+    }
+
+    private void validationMemberHaveReadAuthority(Trip trip, Member member) {
+        if (trip.isPrivate() && !isMemberAcceptedTripParticipants(trip, member)) {
             throw new TripException(NOT_AUTHORITY_READ_TRIP);
         }
     }
@@ -145,7 +150,7 @@ public class PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(NOT_FOUND_POST));
 
-        validationMemberHaveWriteAuthority(post.getTrip(), member.getId());
+        validationMemberHaveWriteAuthority(post.getTrip(), member);
 
         if (postLikeRedisRepository.existsByPostIdAndUserId(postId, member.getId())) {
             postLikeRedisRepository.delete(postId, member.getId());
@@ -154,15 +159,9 @@ public class PostService {
         }
     }
 
-    private void validationMemberHaveWriteAuthority(Trip trip, Long memberId) {
-        if (!isMemberTripParticipants(trip.getParticipants(), memberId)) {
+    private void validationMemberHaveWriteAuthority(Trip trip, Member member) {
+        if (!isMemberAcceptedTripParticipants(trip, member)) {
             throw new TripException(NOT_AUTHORITY_WRITE_TRIP);
         }
-    }
-
-    private boolean isMemberTripParticipants(List<Participant> participants, Long memberId) {
-        return participants.stream().anyMatch(participant ->
-                participant.getMember().getId().equals(memberId)
-                        && participant.getType().equals(ParticipantType.ACCEPTED));
     }
 }
