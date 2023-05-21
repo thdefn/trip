@@ -22,8 +22,9 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = PostController.class)
@@ -61,6 +62,7 @@ class PostControllerTest {
                         .locationId(2L)
                         .locationName("제주공항")
                         .authorId(1L)
+                        .likeOfPosts(0L)
                         .authorProfilePath("/profile/basic.jpg")
                         .authorNickname("강아지")
                         .build());
@@ -95,6 +97,7 @@ class PostControllerTest {
                         .imagePaths(List.of("/post/1234567543123.jpg"))
                         .locationId(2L)
                         .locationName("제주공항")
+                        .likeOfPosts(1L)
                         .authorId(1L)
                         .authorProfilePath("/profile/basic.jpg")
                         .authorNickname("강아지")
@@ -111,6 +114,84 @@ class PostControllerTest {
                             request.setMethod("PUT");
                             return request;
                         })
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("여행 기록 삭제 성공")
+    void deletePostTest_success() throws Exception {
+        //given
+        //when
+        //then
+        mockMvc.perform(delete("/trips/posts/{postId}", 1L)
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("로케이션 아이디로 기록 조회 성공")
+    void readPostsByLocationTest_success() throws Exception {
+        //given
+        given(postService.readPostsByLocation(anyLong(), any()))
+                .willReturn(List.of(
+                        PostDetailDto.builder()
+                                .id(1L)
+                                .content("드디어 여행 시작")
+                                .imagePaths(List.of("/posts/1.jpg", "/posts/2.jpg"))
+                                .locationId(1L)
+                                .locationName("김포공항")
+                                .authorId(1L)
+                                .likeOfPosts(1L)
+                                .authorNickname("지금은새벽(나)")
+                                .authorProfilePath("/profile/basic.jpg")
+                                .isReader(true)
+                                .build(),
+                        PostDetailDto.builder()
+                                .id(2L)
+                                .content("제주도에 영원히 살고싶다,,,")
+                                .imagePaths(List.of("/posts/1.jpg", "/posts/2.jpg"))
+                                .locationId(2L)
+                                .locationName("제주공항")
+                                .authorId(1L)
+                                .likeOfPosts(2L)
+                                .authorNickname("지금은새벽(나)")
+                                .authorProfilePath("/profile/basic.jpg")
+                                .isReader(true)
+                                .build()
+                ));
+        //when
+        //then
+        mockMvc.perform(get("/trips/locations/{locationId}", 1L)
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").isNumber())
+                .andExpect(jsonPath("$[0].content").isString())
+                .andExpect(jsonPath("$[0].imagePaths.[0]").isString())
+                .andExpect(jsonPath("$[0].isReader").isBoolean())
+        ;
+    }
+
+    @Test
+    @WithMockCustomUser
+    @DisplayName("좋아요, 좋아요 취소 성공")
+    void likePostTest_success() throws Exception {
+        //given
+        //when
+        //then
+        mockMvc.perform(put("/trips/posts/{postId}/like", 1L)
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
                 .andExpect(status().isOk());

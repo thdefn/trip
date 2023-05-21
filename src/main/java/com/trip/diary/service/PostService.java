@@ -1,18 +1,18 @@
 package com.trip.diary.service;
 
 import com.trip.diary.domain.model.*;
-import com.trip.diary.domain.repository.LocationRepository;
-import com.trip.diary.domain.repository.PostImageRepository;
-import com.trip.diary.domain.repository.PostRepository;
-import com.trip.diary.domain.repository.TripRepository;
-import com.trip.diary.domain.type.ParticipantType;
+import com.trip.diary.domain.repository.*;
 import com.trip.diary.dto.CreatePostForm;
 import com.trip.diary.dto.PostDetailDto;
 import com.trip.diary.dto.UpdatePostForm;
+import com.trip.diary.event.dto.ImageDeleteEvent;
+import com.trip.diary.exception.ErrorCode;
+import com.trip.diary.exception.LocationException;
 import com.trip.diary.exception.PostException;
 import com.trip.diary.exception.TripException;
 import com.trip.diary.util.ImageManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,15 +22,20 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.trip.diary.domain.type.ParticipantType.ACCEPTED;
 import static com.trip.diary.exception.ErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
     private final LocationRepository locationRepository;
+    private final ParticipantRepository participantRepository;
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
     private final TripRepository tripRepository;
+
+    private final PostLikeRedisRepository postLikeRedisRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
     private final ImageManager imageManager;
     private final static String IMAGE_DOMAIN = "post";
 
@@ -39,21 +44,13 @@ public class PostService {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
 
-        if (!isMemberTripParticipants(trip.getParticipants(), member.getId())) {
-            throw new TripException(NOT_AUTHORITY_WRITE_TRIP);
-        }
+        validationMemberHaveWriteAuthority(trip, member);
 
         Location location = getNewlyLocation(trip, form.getLocation());
         Post savedPost = postRepository.save(Post.of(form, location, trip, member));
         List<String> imagePaths = savePostImages(savedPost, images);
         updateLocationThumbnail(location, imagePaths.get(0));
-        return PostDetailDto.of(savedPost, imagePaths);
-    }
-
-    private boolean isMemberTripParticipants(List<Participant> participants, Long memberId) {
-        return participants.stream().anyMatch(participant ->
-                participant.getMember().getId().equals(memberId)
-                        && participant.getType().equals(ParticipantType.ACCEPTED));
+        return PostDetailDto.of(savedPost, imagePaths, member.getId());
     }
 
     private Location getNewlyLocation(Trip trip, String locationName) {
@@ -97,13 +94,78 @@ public class PostService {
         post.setContent(form.getContent());
         List<String> imagePaths = savePostImages(post, images);
         updateLocationThumbnail(post.getLocation(), imagePaths.get(0));
-        return PostDetailDto.of(postRepository.save(post), imagePaths);
+        return PostDetailDto.of(postRepository.save(post), imagePaths,
+                postLikeRedisRepository.countByPostId(postId),
+                postLikeRedisRepository.existsByPostIdAndUserId(post.getId(), member.getId()),
+                member.getId());
     }
 
     private void deleteOldPostImages(Post post) {
-        imageManager.deleteImages(post.getImages().stream()
-                .map(PostImage::getImagePath)
-                .collect(Collectors.toList()));
         postImageRepository.deleteAllInBatch(post.getImages());
+        applicationEventPublisher.publishEvent(
+                new ImageDeleteEvent(post.getImages().stream()
+                        .map(PostImage::getImagePath)
+                        .collect(Collectors.toList())));
+    }
+
+    @Transactional
+    public void delete(Long postId, Member member) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(NOT_FOUND_POST));
+
+        if (!Objects.equals(post.getMember().getId(), member.getId())) {
+            throw new PostException(NOT_POST_OWNER);
+        }
+
+        if (post.getLocation().getPosts().size() == 1) {
+            locationRepository.delete(post.getLocation());
+        }
+        postRepository.delete(post);
+
+        applicationEventPublisher.publishEvent(
+                new ImageDeleteEvent(post.getImages().stream()
+                        .map(PostImage::getImagePath)
+                        .collect(Collectors.toList())));
+    }
+
+    @Transactional
+    public List<PostDetailDto> readPostsByLocation(Long locationId, Member member) {
+        Location location = locationRepository.findById(locationId)
+                .orElseThrow(() -> new LocationException(ErrorCode.NOT_FOUND_LOCATION));
+
+        validationMemberHaveReadAuthority(location.getTrip(), member);
+
+        return location.getPosts().stream()
+                .map(post -> PostDetailDto.of(post,
+                        postLikeRedisRepository.countByPostId(post.getId()),
+                        postLikeRedisRepository.existsByPostIdAndUserId(post.getId(), member.getId()),
+                        member.getId()))
+                .collect(Collectors.toList());
+    }
+
+    private void validationMemberHaveReadAuthority(Trip trip, Member member) {
+        if (trip.isPrivate() && !participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED)) {
+            throw new TripException(NOT_AUTHORITY_READ_TRIP);
+        }
+    }
+
+    @Transactional
+    public void like(Long postId, Member member) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(NOT_FOUND_POST));
+
+        validationMemberHaveWriteAuthority(post.getTrip(), member);
+
+        if (postLikeRedisRepository.existsByPostIdAndUserId(postId, member.getId())) {
+            postLikeRedisRepository.delete(postId, member.getId());
+        } else {
+            postLikeRedisRepository.save(postId, member.getId());
+        }
+    }
+
+    private void validationMemberHaveWriteAuthority(Trip trip, Member member) {
+        if (!participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED)) {
+            throw new TripException(NOT_AUTHORITY_WRITE_TRIP);
+        }
     }
 }

@@ -1,7 +1,7 @@
 package com.trip.diary.controller;
 
-import com.trip.diary.dto.PostDetailDto;
 import com.trip.diary.dto.CreatePostForm;
+import com.trip.diary.dto.PostDetailDto;
 import com.trip.diary.dto.UpdatePostForm;
 import com.trip.diary.security.MemberPrincipal;
 import com.trip.diary.service.PostService;
@@ -34,5 +34,26 @@ public class PostController {
                                                      @RequestPart @Valid UpdatePostForm form,
                                                      @AuthenticationPrincipal MemberPrincipal principal) {
         return ResponseEntity.ok(postService.update(postId, form, images, principal.getMember()));
+    }
+
+    @DeleteMapping("/trips/posts/{postId}")
+    private ResponseEntity<Void> deletePost(@PathVariable Long postId,
+                                            @AuthenticationPrincipal MemberPrincipal principal) {
+        postService.delete(postId, principal.getMember());
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/trips/posts/{postId}/like")
+    private ResponseEntity<Void> likePost(@PathVariable Long postId,
+                                          @AuthenticationPrincipal MemberPrincipal principal) {
+        postService.like(postId, principal.getMember());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/trips/locations/{locationId}")
+    private ResponseEntity<List<PostDetailDto>> readPostsByLocation(@PathVariable Long locationId,
+                                                                    @AuthenticationPrincipal MemberPrincipal principal) {
+        return ResponseEntity.ok(
+                postService.readPostsByLocation(locationId, principal.getMember()));
     }
 }

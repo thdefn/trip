@@ -264,6 +264,7 @@ class TripServiceTest {
                                 .build()))
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(participantRepository.existsByTripAndMember(any(), any())).willReturn(true);
         //when
         List<ParticipantDto> result = tripService.getTripParticipants(1L, member);
         //then
@@ -299,6 +300,7 @@ class TripServiceTest {
                                 .build()))
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(participantRepository.existsByTripAndMember(any(), any())).willReturn(true);
         //when
         List<ParticipantDto> result = tripService.getTripParticipants(1L, participant1);
         //then
@@ -387,6 +389,7 @@ class TripServiceTest {
                                 .build()))
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
+        given(participantRepository.existsByTripAndMember(any(), any())).willReturn(false);
         //when
         TripException exception = assertThrows(TripException.class,
                 () -> tripService.getTripParticipants(1L, member));
@@ -507,6 +510,7 @@ class TripServiceTest {
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(target));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
         given(participantRepository.existsByTripAndMember(any(), any())).willReturn(false);
         //when
         tripService.invite(1L, 4L, member);
@@ -549,6 +553,7 @@ class TripServiceTest {
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(target));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
         given(participantRepository.existsByTripAndMember(any(), any())).willReturn(true);
         //when
         TripException exception = assertThrows(TripException.class,
@@ -633,6 +638,7 @@ class TripServiceTest {
                 .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
         given(memberRepository.findById(anyLong())).willReturn(Optional.of(target));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(false);
         //when
         TripException exception = assertThrows(TripException.class,
                 () -> tripService.invite(1L, 4L, member));
