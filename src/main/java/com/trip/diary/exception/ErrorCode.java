@@ -18,6 +18,8 @@ public enum ErrorCode {
     NOT_AUTHORITY_WRITE_TRIP(HttpStatus.BAD_REQUEST, "여행 기록장에 대한 해당 수정 권한이 없습니다."),
     NOT_FOUND_POST(HttpStatus.BAD_REQUEST, "해당 기록을 찾을 수 없습니다."),
     NOT_FOUND_LOCATION(HttpStatus.BAD_REQUEST, "해당 기록을 찾을 수 없습니다."),
+    NOT_FOUND_COMMENT(HttpStatus.BAD_REQUEST, "해당 기록을 찾을 수 없습니다."),
+    NOT_COMMENT_OWNER(HttpStatus.BAD_REQUEST, "해당 댓글에 대한 작성자가 아닙니다."),
     NOT_POST_OWNER(HttpStatus.BAD_REQUEST, "해당 기록에 대한 작성자가 아닙니다."),
     UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "업로드에 실패했습니다.")
     ;

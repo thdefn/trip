@@ -39,4 +39,8 @@ public class Member extends BaseEntity {
     public void setPassword(String password) {
         this.password = password;
     }
+
+    public boolean isReader(Long readerId) {
+        return readerId.equals(this.id);
+    }
 }
