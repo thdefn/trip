@@ -16,7 +16,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.trip.diary.domain.type.ParticipantType.ACCEPTED;
 import static com.trip.diary.exception.ErrorCode.*;
@@ -60,5 +62,38 @@ public class CommentService {
         comment.modifyContent(form.getContent());
 
         return CommentDto.of(commentRepository.save(comment));
+    }
+
+    @Transactional
+    public CommentDto ReComment(Long commentId, CreateCommentForm form, Member member) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CommentException(NOT_FOUND_COMMENT));
+
+        validationMemberHaveWriteAuthority(comment.getPost().getTrip(), member);
+
+        return CommentDto.of(commentRepository.save(
+                Comment.builder()
+                        .content(form.getContent())
+                        .post(comment.getPost())
+                        .parentComment(comment)
+                        .member(member)
+                        .build()));
+    }
+
+    @Transactional
+    public List<CommentDto> read(Long postId, Member member) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(NOT_FOUND_POST));
+
+        validationMemberHaveReadAuthority(post.getTrip(), member);
+
+        return commentRepository.findByPostAndParentCommentIsNull(post).stream()
+                .map(comment -> CommentDto.of(comment, member.getId())).collect(Collectors.toList());
+    }
+
+    private void validationMemberHaveReadAuthority(Trip trip, Member member) {
+        if (trip.isPrivate() && !participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED)) {
+            throw new TripException(NOT_AUTHORITY_READ_TRIP);
+        }
     }
 }
