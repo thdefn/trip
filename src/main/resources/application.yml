@@ -1,9 +1,9 @@
 spring:
-#  datasource:
-#    url: jdbc:h2:mem:test
-#    username: sa
-#    password:
-#    driverClassName: org.h2.Driver
+  #  datasource:
+  #    url: jdbc:h2:mem:test
+  #    username: sa
+  #    password:
+  #    driverClassName: org.h2.Driver
   datasource:
     url: jdbc:mysql://localhost:3307/trip
     username: root
@@ -27,6 +27,14 @@ spring:
       repositories:
         enabled: true
       url: localhost:9200
+    redis:
+      password: 1234
+      timeout: 600ms
+  cache:
+    type: redis
+    redis:
+      cache-null-values: false
+      time-to-live: 30000
   jwt:
     secret: d29uc2Vvbnp6YW5nCg==
 cloud:
@@ -45,4 +53,3 @@ cloud:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
-

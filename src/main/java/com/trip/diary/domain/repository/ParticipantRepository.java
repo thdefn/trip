@@ -3,7 +3,7 @@ package com.trip.diary.domain.repository;
 import com.trip.diary.domain.model.Member;
 import com.trip.diary.domain.model.Participant;
 import com.trip.diary.domain.model.Trip;
-import com.trip.diary.domain.type.ParticipantType;
+import com.trip.diary.domain.constants.ParticipantType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

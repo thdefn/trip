@@ -1,6 +1,6 @@
 package com.trip.diary.domain.model;
 
-import com.trip.diary.domain.type.MemberType;
+import com.trip.diary.domain.constants.MemberType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,5 +38,9 @@ public class Member extends BaseEntity {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public boolean isReader(Long readerId) {
+        return readerId.equals(this.id);
     }
 }

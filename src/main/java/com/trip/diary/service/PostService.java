@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.trip.diary.domain.type.ParticipantType.ACCEPTED;
+import static com.trip.diary.domain.constants.ParticipantType.ACCEPTED;
 import static com.trip.diary.exception.ErrorCode.*;
 
 @Service

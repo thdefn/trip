@@ -1,7 +1,7 @@
 package com.trip.diary.security;
 
 import com.trip.diary.domain.model.Member;
-import com.trip.diary.domain.type.MemberType;
+import com.trip.diary.domain.constants.MemberType;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
