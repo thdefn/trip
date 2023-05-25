@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.trip.diary.domain.type.ParticipantType.ACCEPTED;
+import static com.trip.diary.domain.constants.ParticipantType.ACCEPTED;
 import static com.trip.diary.exception.ErrorCode.*;
 
 @Service
@@ -66,7 +66,7 @@ public class CommentService {
 
     @Transactional
     public CommentDto reComment(Long commentId, CreateCommentForm form, Member member) {
-        Comment comment = commentRepository.findById(commentId)
+        Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
                 .orElseThrow(() -> new CommentException(NOT_FOUND_COMMENT));
 
         if(!Objects.isNull(comment.getParentComment())){

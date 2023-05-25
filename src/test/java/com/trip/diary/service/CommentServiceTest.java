@@ -224,7 +224,7 @@ class CommentServiceTest {
                 .post(post)
                 .build();
 
-        given(commentRepository.findById(anyLong()))
+        given(commentRepository.findByIdAndDeletedAtIsNull(anyLong()))
                 .willReturn(Optional.of(comment));
         given(participantRepository.existsByTripAndMemberAndType(any(), any(), any()))
                 .willReturn(true);
@@ -253,7 +253,7 @@ class CommentServiceTest {
                 .content("제주도 도착입니당")
                 .build();
 
-        given(commentRepository.findById(any())).willReturn(Optional.empty());
+        given(commentRepository.findByIdAndDeletedAtIsNull(any())).willReturn(Optional.empty());
         //when
         CommentException exception = assertThrows(CommentException.class, () -> commentService.reComment(1L, form, member));
         //then
@@ -275,7 +275,7 @@ class CommentServiceTest {
                 .post(post)
                 .build();
 
-        given(commentRepository.findById(anyLong()))
+        given(commentRepository.findByIdAndDeletedAtIsNull(anyLong()))
                 .willReturn(Optional.of(comment));
 
         given(participantRepository.existsByTripAndMemberAndType(any(), any(), any()))
@@ -307,7 +307,7 @@ class CommentServiceTest {
                 .post(post)
                 .build();
 
-        given(commentRepository.findById(anyLong()))
+        given(commentRepository.findByIdAndDeletedAtIsNull(anyLong()))
                 .willReturn(Optional.of(comment));
         //when
         CommentException exception = assertThrows(CommentException.class, () -> commentService.reComment(1L, form, member));
