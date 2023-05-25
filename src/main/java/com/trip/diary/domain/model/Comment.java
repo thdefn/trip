@@ -9,6 +9,8 @@ import lombok.experimental.SuperBuilder;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.trip.diary.domain.constants.Constants.UNIDENTIFIED_MEMBER_ID;
+
 @Getter
 @SuperBuilder
 @AllArgsConstructor
@@ -42,8 +44,7 @@ public class Comment extends BaseEntity {
 
     public void delete() {
         this.content = "삭제된 댓글입니다.";
-        this.member = Member.builder()
-                .id(-1L).build();
+        this.member = Member.builder().id(UNIDENTIFIED_MEMBER_ID).build();
         this.deletedAt = LocalDateTime.now();
     }
 }

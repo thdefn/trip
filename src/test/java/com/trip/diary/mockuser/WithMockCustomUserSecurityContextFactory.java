@@ -1,7 +1,7 @@
 package com.trip.diary.mockuser;
 
 import com.trip.diary.domain.model.Member;
-import com.trip.diary.domain.type.MemberType;
+import com.trip.diary.domain.constants.MemberType;
 import com.trip.diary.security.MemberPrincipal;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;

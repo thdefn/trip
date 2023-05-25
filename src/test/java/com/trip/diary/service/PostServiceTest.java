@@ -2,7 +2,7 @@ package com.trip.diary.service;
 
 import com.trip.diary.domain.model.*;
 import com.trip.diary.domain.repository.*;
-import com.trip.diary.domain.type.ParticipantType;
+import com.trip.diary.domain.constants.ParticipantType;
 import com.trip.diary.dto.CreatePostForm;
 import com.trip.diary.dto.PostDetailDto;
 import com.trip.diary.dto.UpdatePostForm;

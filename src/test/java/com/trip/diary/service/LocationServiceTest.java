@@ -4,7 +4,7 @@ import com.trip.diary.domain.model.*;
 import com.trip.diary.domain.repository.LocationRepository;
 import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.TripRepository;
-import com.trip.diary.domain.type.ParticipantType;
+import com.trip.diary.domain.constants.ParticipantType;
 import com.trip.diary.dto.LocationDetailDto;
 import com.trip.diary.dto.LocationDto;
 import com.trip.diary.exception.ErrorCode;

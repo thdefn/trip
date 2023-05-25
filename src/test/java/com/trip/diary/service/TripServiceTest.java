@@ -6,7 +6,7 @@ import com.trip.diary.domain.model.Trip;
 import com.trip.diary.domain.repository.MemberRepository;
 import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.TripRepository;
-import com.trip.diary.domain.type.ParticipantType;
+import com.trip.diary.domain.constants.ParticipantType;
 import com.trip.diary.dto.*;
 import com.trip.diary.elasticsearch.model.MemberDocument;
 import com.trip.diary.elasticsearch.repository.MemberSearchRepository;

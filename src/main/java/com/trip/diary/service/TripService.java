@@ -23,8 +23,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.trip.diary.domain.type.ParticipantType.ACCEPTED;
-import static com.trip.diary.domain.type.ParticipantType.PENDING;
+import static com.trip.diary.domain.constants.ParticipantType.ACCEPTED;
+import static com.trip.diary.domain.constants.ParticipantType.PENDING;
 import static com.trip.diary.exception.ErrorCode.*;
 
 @Service
