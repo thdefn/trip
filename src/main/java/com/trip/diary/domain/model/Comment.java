@@ -39,4 +39,11 @@ public class Comment extends BaseEntity {
     public void modifyContent(String content) {
         this.content = content;
     }
+
+    public void delete() {
+        this.content = "삭제된 댓글입니다.";
+        this.member = Member.builder()
+                .id(-1L).build();
+        this.deletedAt = LocalDateTime.now();
+    }
 }

@@ -25,8 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
@@ -288,6 +287,35 @@ class CommentServiceTest {
     }
 
     @Test
+    @DisplayName("대댓글 생성 실패 - 대댓글에 대댓글")
+    void ReCommentTest_failWhenCanNotReCommentToReComment() {
+        //given
+        CreateCommentForm form = CreateCommentForm.builder()
+                .content("도착을 축하해요")
+                .build();
+
+        Comment comment = Comment.builder()
+                .id(2L)
+                .content("제주도 도착입니당")
+                .member(member)
+                .parentComment(Comment.builder()
+                        .id(1L)
+                        .content("이곳은 제주도")
+                        .member(participant1)
+                        .build()
+                )
+                .post(post)
+                .build();
+
+        given(commentRepository.findById(anyLong()))
+                .willReturn(Optional.of(comment));
+        //when
+        CommentException exception = assertThrows(CommentException.class, () -> commentService.reComment(1L, form, member));
+        //then
+        assertEquals(ErrorCode.CAN_NOT_RE_COMMENT_TO_RE_COMMENT, exception.getErrorCode());
+    }
+
+    @Test
     @DisplayName("댓글 조회 성공")
     void readTest_success() {
         //given
@@ -362,6 +390,94 @@ class CommentServiceTest {
         TripException exception = assertThrows(TripException.class, () -> commentService.read(1L, member));
         //then
         assertEquals(ErrorCode.NOT_AUTHORITY_READ_TRIP, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 성공")
+    void deleteTest_success() {
+        //given
+        given(commentRepository.findByIdAndDeletedAtIsNull(anyLong()))
+                .willReturn(Optional.of(
+                        Comment.builder()
+                                .id(1L)
+                                .content("제주도 도착입니당")
+                                .member(member)
+                                .post(post)
+                                .reComments(new ArrayList<>())
+                                .build()));
+        //when
+        commentService.delete(1L, member);
+        ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
+        //then
+        verify(commentRepository, times(1)).delete(captor.capture());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 성공 - 대댓글이 있을 때")
+    void deleteTest_successWhenCommentHaveReComment() {
+        //given
+        given(commentRepository.findByIdAndDeletedAtIsNull(anyLong()))
+                .willReturn(Optional.of(
+                        Comment.builder()
+                                .id(1L)
+                                .content("제주도 도착입니당")
+                                .member(member)
+                                .post(post)
+                                .reComments(
+                                        List.of(
+                                                Comment.builder()
+                                                        .id(2L)
+                                                        .content("저 너무 설레는데 어쩌죠 ?")
+                                                        .member(participant1)
+                                                        .post(post)
+                                                        .build(),
+                                                Comment.builder()
+                                                        .id(3L)
+                                                        .content("어디야 너ㅡㅡ")
+                                                        .member(member)
+                                                        .post(post)
+                                                        .build()
+                                        ))
+                                .build()));
+        //when
+        commentService.delete(1L, member);
+        ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
+        //then
+        verify(commentRepository, times(1)).save(captor.capture());
+        assertEquals("삭제된 댓글입니다.", captor.getValue().getContent());
+        assertEquals(-1L, captor.getValue().getMember().getId());
+        assertNotNull(captor.getValue().getDeletedAt());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 - 해당 댓글 없음")
+    void deleteTest_failWhenNotFoundComment() {
+        //given
+        given(commentRepository.findByIdAndDeletedAtIsNull(anyLong()))
+                .willReturn(Optional.empty());
+        //when
+        CommentException exception = assertThrows(CommentException.class, () -> commentService.delete(1L, member));
+        //then
+        assertEquals(ErrorCode.NOT_FOUND_COMMENT, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 실패 - 댓글 작성자 아님")
+    void deleteTest_failWhenNotCommentOwner() {
+        //given
+        given(commentRepository.findByIdAndDeletedAtIsNull(anyLong()))
+                .willReturn(Optional.of(
+                        Comment.builder()
+                                .id(1L)
+                                .content("제주도 도착입니당")
+                                .member(participant1)
+                                .post(post)
+                                .reComments(new ArrayList<>())
+                                .build()));
+        //when
+        CommentException exception = assertThrows(CommentException.class, () -> commentService.delete(1L, member));
+        //then
+        assertEquals(ErrorCode.NOT_COMMENT_OWNER, exception.getErrorCode());
     }
 
 }

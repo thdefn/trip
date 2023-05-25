@@ -26,7 +26,6 @@ public class CommentController {
 
     @GetMapping("/trips/posts/{postId}/comments")
     private ResponseEntity<List<CommentDto>> readComments(@PathVariable Long postId,
-
                                                           @AuthenticationPrincipal MemberPrincipal memberPrincipal) {
         return ResponseEntity.ok(commentService.read(postId, memberPrincipal.getMember()));
     }
@@ -43,6 +42,13 @@ public class CommentController {
                                                      @Valid @RequestBody CreateCommentForm form,
                                                      @AuthenticationPrincipal MemberPrincipal memberPrincipal) {
         return ResponseEntity.ok(commentService.update(commentId, form, memberPrincipal.getMember()));
+    }
+
+    @DeleteMapping("/trips/posts/comments/{commentId}")
+    private ResponseEntity<Void> deleteComment(@PathVariable Long commentId,
+                                               @AuthenticationPrincipal MemberPrincipal memberPrincipal) {
+        commentService.delete(commentId, memberPrincipal.getMember());
+        return ResponseEntity.ok().build();
     }
 
 }

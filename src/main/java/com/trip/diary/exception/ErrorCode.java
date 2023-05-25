@@ -21,6 +21,7 @@ public enum ErrorCode {
     NOT_FOUND_COMMENT(HttpStatus.BAD_REQUEST, "해당 기록을 찾을 수 없습니다."),
     NOT_COMMENT_OWNER(HttpStatus.BAD_REQUEST, "해당 댓글에 대한 작성자가 아닙니다."),
     NOT_POST_OWNER(HttpStatus.BAD_REQUEST, "해당 기록에 대한 작성자가 아닙니다."),
+    CAN_NOT_RE_COMMENT_TO_RE_COMMENT(HttpStatus.BAD_REQUEST, "대댓글에 대댓글을 달 수 없습니다."),
     UPLOAD_FAILED(HttpStatus.BAD_REQUEST, "업로드에 실패했습니다.")
     ;
     private final HttpStatus httpStatus;

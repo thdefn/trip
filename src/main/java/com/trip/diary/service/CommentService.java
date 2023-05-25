@@ -69,6 +69,10 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentException(NOT_FOUND_COMMENT));
 
+        if(!Objects.isNull(comment.getParentComment())){
+            throw new CommentException(CAN_NOT_RE_COMMENT_TO_RE_COMMENT);
+        }
+
         validationMemberHaveWriteAuthority(comment.getPost().getTrip(), member);
 
         return CommentDto.of(commentRepository.save(
@@ -94,6 +98,23 @@ public class CommentService {
     private void validationMemberHaveReadAuthority(Trip trip, Member member) {
         if (trip.isPrivate() && !participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED)) {
             throw new TripException(NOT_AUTHORITY_READ_TRIP);
+        }
+    }
+
+    @Transactional
+    public void delete(Long commentId, Member member) {
+        Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
+                .orElseThrow(() -> new CommentException(NOT_FOUND_COMMENT));
+
+        if (!Objects.equals(comment.getMember().getId(), member.getId())) {
+            throw new CommentException(NOT_COMMENT_OWNER);
+        }
+
+        if (!comment.getReComments().isEmpty()) {
+            comment.delete();
+            commentRepository.save(comment);
+        } else {
+            commentRepository.delete(comment);
         }
     }
 }
