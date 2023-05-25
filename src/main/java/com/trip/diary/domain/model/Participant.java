@@ -1,6 +1,6 @@
 package com.trip.diary.domain.model;
 
-import com.trip.diary.domain.type.ParticipantType;
+import com.trip.diary.domain.constants.ParticipantType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

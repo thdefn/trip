@@ -21,7 +21,7 @@ public class PostDetailDto {
     private Long locationId;
     private String locationName;
     private Long authorId;
-    private long likeOfPosts;
+    private long countOfLikes;
     private String authorNickname;
     private String authorProfilePath;
     private Boolean isReader;
@@ -44,13 +44,13 @@ public class PostDetailDto {
     }
 
     public static PostDetailDto of(Post post, List<String> imagePaths,
-                                   long likeOfPosts, boolean isReaderLiked,
+                                   long countOfLikes, boolean isReaderLiked,
                                    Long readerId) {
         boolean isReader = readerId.equals(post.getMember().getId());
         return PostDetailDto.builder()
                 .id(post.getId())
                 .content(post.getContent())
-                .likeOfPosts(likeOfPosts)
+                .countOfLikes(countOfLikes)
                 .imagePaths(imagePaths)
                 .locationId(post.getLocation().getId())
                 .locationName(post.getLocation().getName())
@@ -63,13 +63,13 @@ public class PostDetailDto {
                 .build();
     }
 
-    public static PostDetailDto of(Post post, long likeOfPosts,
+    public static PostDetailDto of(Post post, long countOfLikes,
                                    boolean isReaderLiked, Long readerId) {
         boolean isReader = readerId.equals(post.getMember().getId());
         return PostDetailDto.builder()
                 .id(post.getId())
                 .content(post.getContent())
-                .likeOfPosts(likeOfPosts)
+                .countOfLikes(countOfLikes)
                 .imagePaths(post.getImages().stream()
                         .map(PostImage::getImagePath)
                         .collect(Collectors.toList()))

@@ -1,7 +1,7 @@
 package com.trip.diary.dto;
 
 import com.trip.diary.domain.model.Participant;
-import com.trip.diary.domain.type.ParticipantType;
+import com.trip.diary.domain.constants.ParticipantType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
