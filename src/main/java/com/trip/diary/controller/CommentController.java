@@ -35,7 +35,7 @@ public class CommentController {
     private ResponseEntity<CommentDto> createReComment(@PathVariable Long commentId,
                                                        @Valid @RequestBody CreateCommentForm form,
                                                        @AuthenticationPrincipal MemberPrincipal memberPrincipal) {
-        return ResponseEntity.ok(commentService.ReComment(commentId, form, memberPrincipal.getMember()));
+        return ResponseEntity.ok(commentService.reComment(commentId, form, memberPrincipal.getMember()));
     }
 
     @PutMapping("/trips/posts/comments/{commentId}")

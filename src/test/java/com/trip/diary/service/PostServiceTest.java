@@ -687,14 +687,14 @@ class PostServiceTest {
         //when
         List<PostDetailDto> result = postService.readPostsByLocation(1L, member);
         //then
-        assertEquals(2L, result.get(0).getLikeOfPosts());
+        assertEquals(2L, result.get(0).getCountOfLikes());
         assertEquals(1L, result.get(0).getId());
         assertEquals("제주공항에서 본 고양이 짱귀엽다", result.get(0).getContent());
         assertTrue(result.get(0).getIsReader());
         assertNotEquals(member.getNickname(), result.get(0).getAuthorNickname());
         assertEquals(member.getId(), result.get(0).getId());
         assertTrue(result.get(0).getIsReaderLiked());
-        assertEquals(0L, result.get(1).getLikeOfPosts());
+        assertEquals(0L, result.get(1).getCountOfLikes());
         assertFalse(result.get(1).getIsReader());
         assertEquals(participant1.getNickname(), result.get(1).getAuthorNickname());
         assertEquals(participant1.getId(), result.get(1).getId());

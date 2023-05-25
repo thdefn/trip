@@ -65,7 +65,7 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentDto ReComment(Long commentId, CreateCommentForm form, Member member) {
+    public CommentDto reComment(Long commentId, CreateCommentForm form, Member member) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentException(NOT_FOUND_COMMENT));
 
