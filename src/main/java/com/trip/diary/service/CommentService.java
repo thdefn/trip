@@ -4,6 +4,7 @@ import com.trip.diary.domain.model.Comment;
 import com.trip.diary.domain.model.Member;
 import com.trip.diary.domain.model.Post;
 import com.trip.diary.domain.model.Trip;
+import com.trip.diary.domain.repository.CommentLikeRedisRepository;
 import com.trip.diary.domain.repository.CommentRepository;
 import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.PostRepository;
@@ -29,6 +30,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final ParticipantRepository participantRepository;
+    private final CommentLikeRedisRepository commentLikeRedisRepository;
 
     @Transactional
     public CommentDto create(Long postId, CreateCommentForm form, Member member) {
@@ -69,7 +71,7 @@ public class CommentService {
         Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
                 .orElseThrow(() -> new CommentException(NOT_FOUND_COMMENT));
 
-        if(!Objects.isNull(comment.getParentComment())){
+        if (!Objects.isNull(comment.getParentComment())) {
             throw new CommentException(CAN_NOT_RE_COMMENT_TO_RE_COMMENT);
         }
 
@@ -92,7 +94,20 @@ public class CommentService {
         validationMemberHaveReadAuthority(post.getTrip(), member);
 
         return commentRepository.findByPostAndParentCommentIsNull(post).stream()
-                .map(comment -> CommentDto.of(comment, member.getId())).collect(Collectors.toList());
+                .map(comment -> CommentDto.of(comment,
+                        getReCommentDto(comment.getReComments(), member.getId()),
+                        member.getId(),
+                        commentLikeRedisRepository.countByCommentId(comment.getId()),
+                        commentLikeRedisRepository.existsByCommentIdAndUserId(comment.getId(), member.getId())
+                )).collect(Collectors.toList());
+    }
+
+    private List<CommentDto> getReCommentDto(List<Comment> reComments, Long readerId) {
+        return reComments.stream()
+                .map(comment -> CommentDto.of(comment, readerId,
+                        commentLikeRedisRepository.countByCommentId(comment.getId()),
+                        commentLikeRedisRepository.existsByCommentIdAndUserId(comment.getId(), readerId)))
+                .collect(Collectors.toList());
     }
 
     private void validationMemberHaveReadAuthority(Trip trip, Member member) {
@@ -115,6 +130,21 @@ public class CommentService {
             commentRepository.save(comment);
         } else {
             commentRepository.delete(comment);
+        }
+        commentLikeRedisRepository.deleteAllByCommentId(commentId);
+    }
+
+    @Transactional
+    public void like(Long commentId, Member member) {
+        Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
+                .orElseThrow(() -> new CommentException(NOT_FOUND_COMMENT));
+
+        validationMemberHaveWriteAuthority(comment.getPost().getTrip(), member);
+
+        if (commentLikeRedisRepository.existsByCommentIdAndUserId(commentId, member.getId())) {
+            commentLikeRedisRepository.delete(commentId, member.getId());
+        } else {
+            commentLikeRedisRepository.save(commentId, member.getId());
         }
     }
 }

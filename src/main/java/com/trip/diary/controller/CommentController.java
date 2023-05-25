@@ -51,4 +51,11 @@ public class CommentController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/trips/posts/comments/{commentId}/like")
+    private ResponseEntity<Void> likeComment(@PathVariable Long commentId,
+                                             @AuthenticationPrincipal MemberPrincipal memberPrincipal) {
+        commentService.like(commentId, memberPrincipal.getMember());
+        return ResponseEntity.ok().build();
+    }
+
 }
