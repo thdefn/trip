@@ -24,4 +24,8 @@ public class RedisClient {
     public Long getSizeOfSet(String key) {
         return redisTemplate.opsForSet().size(key);
     }
+
+    public void removeKeyToSet(String key) {
+        redisTemplate.opsForSet().pop(key);
+    }
 }

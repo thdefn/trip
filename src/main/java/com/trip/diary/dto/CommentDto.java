@@ -42,17 +42,32 @@ public class CommentDto {
                 .build();
     }
 
-    public static CommentDto of(Comment comment, Long readerId) {
+    public static CommentDto of(Comment comment, Long readerId, Long countOfLikes, boolean isReaderLiked) {
         return CommentDto.builder()
                 .id(comment.getId())
                 .content(comment.getContent())
-                .countOfComments(comment.getReComments().size())
-                .reComments(comment.getReComments().stream()
-                        .map(CommentDto::of).collect(Collectors.toList()))
+                .countOfLikes(countOfLikes)
                 .authorId(comment.getMember().getId())
                 .authorNickname(comment.getMember().getNickname())
                 .authorProfilePath(comment.getMember().getProfilePath())
                 .isReader(comment.getMember().isReader(readerId))
+                .isReaderLiked(isReaderLiked)
+                .build();
+    }
+
+    public static CommentDto of(Comment comment, List<CommentDto> reCommentDtos,
+                                Long readerId, Long countOfLikes, boolean isReaderLiked) {
+        return CommentDto.builder()
+                .id(comment.getId())
+                .content(comment.getContent())
+                .countOfLikes(countOfLikes)
+                .countOfComments(comment.getReComments().size())
+                .reComments(reCommentDtos)
+                .authorId(comment.getMember().getId())
+                .authorNickname(comment.getMember().getNickname())
+                .authorProfilePath(comment.getMember().getProfilePath())
+                .isReader(comment.getMember().isReader(readerId))
+                .isReaderLiked(isReaderLiked)
                 .build();
     }
 }
