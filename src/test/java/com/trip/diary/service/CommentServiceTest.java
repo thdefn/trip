@@ -4,6 +4,7 @@ import com.trip.diary.domain.model.Comment;
 import com.trip.diary.domain.model.Member;
 import com.trip.diary.domain.model.Post;
 import com.trip.diary.domain.model.Trip;
+import com.trip.diary.domain.repository.CommentLikeRedisRepository;
 import com.trip.diary.domain.repository.CommentRepository;
 import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.PostRepository;
@@ -43,6 +44,9 @@ class CommentServiceTest {
 
     @Mock
     private ParticipantRepository participantRepository;
+
+    @Mock
+    private CommentLikeRedisRepository commentLikeRedisRepository;
 
     @InjectMocks
     private CommentService commentService;
@@ -354,6 +358,14 @@ class CommentServiceTest {
                                 .post(post)
                                 .build()
                 ));
+        given(commentLikeRedisRepository.countByCommentId(1L)).willReturn(3L);
+        given(commentLikeRedisRepository.existsByCommentIdAndUserId(1L, 1L)).willReturn(true);
+        given(commentLikeRedisRepository.countByCommentId(2L)).willReturn(0L);
+        given(commentLikeRedisRepository.existsByCommentIdAndUserId(2L, 1L)).willReturn(false);
+        given(commentLikeRedisRepository.countByCommentId(3L)).willReturn(3L);
+        given(commentLikeRedisRepository.existsByCommentIdAndUserId(3L, 1L)).willReturn(false);
+        given(commentLikeRedisRepository.countByCommentId(4L)).willReturn(0L);
+        given(commentLikeRedisRepository.existsByCommentIdAndUserId(4L, 1L)).willReturn(false);
         //when
         List<CommentDto> result = commentService.read(1L, member);
         //then
@@ -478,6 +490,83 @@ class CommentServiceTest {
         CommentException exception = assertThrows(CommentException.class, () -> commentService.delete(1L, member));
         //then
         assertEquals(ErrorCode.NOT_COMMENT_OWNER, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("좋아요 성공")
+    void likeTest_success() {
+        //given
+        given(commentRepository.findByIdAndDeletedAtIsNull(anyLong()))
+                .willReturn(Optional.of(
+                        Comment.builder()
+                                .id(1L)
+                                .content("제주도 도착입니당")
+                                .member(participant1)
+                                .post(post)
+                                .reComments(new ArrayList<>())
+                                .build()));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
+        given(commentLikeRedisRepository.existsByCommentIdAndUserId(anyLong(), anyLong()))
+                .willReturn(false);
+        //when
+        commentService.like(1L, member);
+        //then
+        verify(commentLikeRedisRepository, times(1)).save(anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("좋아요 성공 - 취소")
+    void likeTest_successCancel() {
+        //given
+        given(commentRepository.findByIdAndDeletedAtIsNull(anyLong()))
+                .willReturn(Optional.of(
+                        Comment.builder()
+                                .id(1L)
+                                .content("제주도 도착입니당")
+                                .member(participant1)
+                                .post(post)
+                                .reComments(new ArrayList<>())
+                                .build()));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
+        given(commentLikeRedisRepository.existsByCommentIdAndUserId(anyLong(), anyLong()))
+                .willReturn(true);
+        //when
+        commentService.like(1L, member);
+        //then
+        verify(commentLikeRedisRepository, times(1)).delete(anyLong(), any());
+    }
+
+    @Test
+    @DisplayName("좋아요 실패 - 해당 댓글 없음")
+    void likeTest_failWhenNotFoundComment() {
+        //given
+        given(commentRepository.findByIdAndDeletedAtIsNull(anyLong()))
+                .willReturn(Optional.empty());
+        //when
+        CommentException exception = assertThrows(CommentException.class, () -> commentService.like(1L, member));
+        //then
+        assertEquals(ErrorCode.NOT_FOUND_COMMENT, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("좋아요 실패 - 여행 기록장에 대한 쓰기 권한 없음")
+    void likeTest_failWhenNotAuthorityWriteTrip() {
+        //given
+        given(commentRepository.findByIdAndDeletedAtIsNull(anyLong()))
+                .willReturn(Optional.of(
+                        Comment.builder()
+                                .id(1L)
+                                .content("제주도 도착입니당")
+                                .member(participant1)
+                                .post(post)
+                                .reComments(new ArrayList<>())
+                                .build()));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any()))
+                .willReturn(false);
+        //when
+        TripException exception = assertThrows(TripException.class, () -> commentService.like(1L, member));
+        //then
+        assertEquals(ErrorCode.NOT_AUTHORITY_WRITE_TRIP, exception.getErrorCode());
     }
 
 }
