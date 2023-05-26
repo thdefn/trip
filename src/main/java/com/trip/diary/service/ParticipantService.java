@@ -9,6 +9,7 @@ import com.trip.diary.domain.repository.TripRepository;
 import com.trip.diary.dto.ParticipantDto;
 import com.trip.diary.dto.TripDto;
 import com.trip.diary.exception.ErrorCode;
+import com.trip.diary.exception.ParticipantException;
 import com.trip.diary.exception.TripException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.trip.diary.exception.ErrorCode.NOT_FOUND_TRIP;
+import static com.trip.diary.exception.ErrorCode.NOT_INVITED_TRIP;
 
 @Service
 @RequiredArgsConstructor
@@ -50,5 +52,27 @@ public class ParticipantService {
         return participantRepository.findByMemberAndType(member, ParticipantType.PENDING)
                 .stream().map(participant -> TripDto.of(participant.getTrip()))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void acceptTripInvitation(Long tripId, Member member) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
+
+        Participant participant =
+                participantRepository.findByTripAndMemberAndType(trip, member, ParticipantType.PENDING)
+                        .orElseThrow(() -> new ParticipantException(NOT_INVITED_TRIP));
+        participant.accept();
+    }
+
+    @Transactional
+    public void denyTripInvitation(Long tripId, Member member) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
+
+        Participant participant =
+                participantRepository.findByTripAndMemberAndType(trip, member, ParticipantType.PENDING)
+                        .orElseThrow(() -> new ParticipantException(NOT_INVITED_TRIP));
+        participantRepository.delete(participant);
     }
 }

@@ -18,5 +18,7 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
 
     Optional<Participant> findByTripAndMember_Id(Trip trip, Long memberId);
 
+    Optional<Participant> findByTripAndMemberAndType(Trip trip, Member member, ParticipantType type);
+
     List<Participant> findByMemberAndType(Member member, ParticipantType type);
 }

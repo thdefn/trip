@@ -7,9 +7,7 @@ import com.trip.diary.service.ParticipantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,5 +26,19 @@ public class ParticipantController {
     @GetMapping("/trips/invitations")
     private ResponseEntity<List<TripDto>> getInvitedTripList(@AuthenticationPrincipal MemberPrincipal principal) {
         return ResponseEntity.ok(participantService.getInvitedTripList(principal.getMember()));
+    }
+
+    @PutMapping("/trips/{tripId}/invitations")
+    private ResponseEntity<Void> acceptTripInvitation(@PathVariable Long tripId,
+                                            @AuthenticationPrincipal MemberPrincipal principal) {
+        participantService.acceptTripInvitation(tripId, principal.getMember());
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/trips/{tripId}/invitations")
+    private ResponseEntity<Void> denyTripInvitation(@PathVariable Long tripId,
+                                                      @AuthenticationPrincipal MemberPrincipal principal) {
+        participantService.denyTripInvitation(tripId, principal.getMember());
+        return ResponseEntity.ok().build();
     }
 }
