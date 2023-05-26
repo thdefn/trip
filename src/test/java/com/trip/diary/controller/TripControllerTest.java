@@ -109,41 +109,6 @@ class TripControllerTest {
 
     @Test
     @WithMockCustomUser
-    @DisplayName("여행 참여 멤버 조회 성공")
-    void getTripParticipantsTest_success() throws Exception {
-        //given
-        given(tripService.getTripParticipants(anyLong(), any()))
-                .willReturn(
-                        List.of(
-                                ParticipantDto.builder()
-                                        .id(1L)
-                                        .isAccepted(true)
-                                        .isReader(true)
-                                        .nickname("안녕")
-                                        .profileUrl("basic.jpg")
-                                        .build(),
-                                ParticipantDto.builder()
-                                        .id(2L)
-                                        .isAccepted(true)
-                                        .isReader(false)
-                                        .nickname("정희")
-                                        .profileUrl("basic.jpg")
-                                        .build()
-                        )
-                );
-        //when
-        //then
-        mockMvc.perform(get("/trips/{tripId}/participants", 1L)
-                        .header("Authorization", TOKEN)
-                        .contentType(MediaType.APPLICATION_JSON)
-
-                )
-                .andDo(print())
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @WithMockCustomUser
     @DisplayName("여행 기록장에 초대할 멤버 검색 성공")
     void searchAddableMembersTest_success() throws Exception {
         //given

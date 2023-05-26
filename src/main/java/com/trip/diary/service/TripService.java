@@ -74,25 +74,6 @@ public class TripService {
     }
 
 
-    @Transactional
-    public List<ParticipantDto> getTripParticipants(Long tripId, Member member) {
-        Trip trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
-
-        List<Participant> participants = trip.getParticipants();
-
-        if (trip.isPrivate() && !participantRepository.existsByTripAndMember(trip, member)) {
-            throw new TripException(ErrorCode.NOT_AUTHORITY_READ_TRIP);
-        }
-
-        return participants
-                .stream()
-                .map(participant ->
-                        ParticipantDto.of(participant, member.getId()))
-                .collect(Collectors.toList());
-    }
-
-
     public TripDto updateTrip(Long tripId, UpdateTripForm form, Member member) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
