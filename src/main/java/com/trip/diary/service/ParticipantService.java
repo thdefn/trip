@@ -1,11 +1,13 @@
 package com.trip.diary.service;
 
+import com.trip.diary.domain.constants.ParticipantType;
 import com.trip.diary.domain.model.Member;
 import com.trip.diary.domain.model.Participant;
 import com.trip.diary.domain.model.Trip;
 import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.TripRepository;
 import com.trip.diary.dto.ParticipantDto;
+import com.trip.diary.dto.TripDto;
 import com.trip.diary.exception.ErrorCode;
 import com.trip.diary.exception.TripException;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +42,13 @@ public class ParticipantService {
                 .stream()
                 .map(participant ->
                         ParticipantDto.of(participant, member.getId()))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<TripDto> getInvitedTripList(Member member) {
+        return participantRepository.findByMemberAndType(member, ParticipantType.PENDING)
+                .stream().map(participant -> TripDto.of(participant.getTrip()))
                 .collect(Collectors.toList());
     }
 }
