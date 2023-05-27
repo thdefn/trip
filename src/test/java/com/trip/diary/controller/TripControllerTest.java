@@ -92,7 +92,13 @@ class TripControllerTest {
                         .id(1L)
                         .title("임의의 타이틀")
                         .description("임의의 설명")
-                        .memberProfileUrls(List.of("basic.jpg", "basic.jpg"))
+                        .participants(List.of(
+                                ParticipantDto.builder()
+                                        .id(1L)
+                                        .profileUrl("profile/basic.jpg")
+                                        .isAccepted(false)
+                                        .build()
+                        ))
                         .build()
                 );
         //when
@@ -101,41 +107,6 @@ class TripControllerTest {
                         .header("Authorization", TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(form))
-
-                )
-                .andDo(print())
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    @WithMockCustomUser
-    @DisplayName("여행 참여 멤버 조회 성공")
-    void getTripParticipantsTest_success() throws Exception {
-        //given
-        given(tripService.getTripParticipants(anyLong(), any()))
-                .willReturn(
-                        List.of(
-                                ParticipantDto.builder()
-                                        .id(1L)
-                                        .isAccepted(true)
-                                        .isReader(true)
-                                        .nickname("안녕")
-                                        .profileUrl("basic.jpg")
-                                        .build(),
-                                ParticipantDto.builder()
-                                        .id(2L)
-                                        .isAccepted(true)
-                                        .isReader(false)
-                                        .nickname("정희")
-                                        .profileUrl("basic.jpg")
-                                        .build()
-                        )
-                );
-        //when
-        //then
-        mockMvc.perform(get("/trips/{tripId}/participants", 1L)
-                        .header("Authorization", TOKEN)
-                        .contentType(MediaType.APPLICATION_JSON)
 
                 )
                 .andDo(print())
