@@ -456,8 +456,6 @@ class CommentServiceTest {
         ArgumentCaptor<Comment> captor = ArgumentCaptor.forClass(Comment.class);
         //then
         verify(commentRepository, times(1)).save(captor.capture());
-        assertEquals("삭제된 댓글입니다.", captor.getValue().getContent());
-        assertEquals(-1L, captor.getValue().getMember().getId());
         assertNotNull(captor.getValue().getDeletedAt());
     }
 

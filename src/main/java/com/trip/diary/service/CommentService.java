@@ -94,12 +94,18 @@ public class CommentService {
         validationMemberHaveReadAuthority(post.getTrip(), member);
 
         return commentRepository.findByPostAndParentCommentIsNull(post).stream()
-                .map(comment -> CommentDto.of(comment,
-                        getReCommentDto(comment.getReComments(), member.getId()),
-                        member.getId(),
+                .map(comment -> getCommentDto(comment, member.getId()))
+                .collect(Collectors.toList());
+    }
+
+    private CommentDto getCommentDto(Comment comment, Long readerId) {
+        return Objects.isNull(comment.getDeletedAt()) ?
+                CommentDto.of(comment,
+                        getReCommentDto(comment.getReComments(), readerId),
+                        readerId,
                         commentLikeRedisRepository.countByCommentId(comment.getId()),
-                        commentLikeRedisRepository.existsByCommentIdAndUserId(comment.getId(), member.getId())
-                )).collect(Collectors.toList());
+                        commentLikeRedisRepository.existsByCommentIdAndUserId(comment.getId(), readerId))
+                : CommentDto.blind(getReCommentDto(comment.getReComments(), readerId));
     }
 
     private List<CommentDto> getReCommentDto(List<Comment> reComments, Long readerId) {
