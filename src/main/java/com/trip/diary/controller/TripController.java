@@ -49,12 +49,6 @@ public class TripController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{tripId}/participants")
-    private ResponseEntity<List<ParticipantDto>> getTripParticipants(@PathVariable Long tripId,
-                                                                     @AuthenticationPrincipal MemberPrincipal principal) {
-        return ResponseEntity.ok(tripService.getTripParticipants(tripId, principal.getMember()));
-    }
-
     @GetMapping("/members/search")
     private ResponseEntity<List<MemberDto>> searchAddableMembers(@RequestParam String keyword,
                                                                  @AuthenticationPrincipal MemberPrincipal principal) {

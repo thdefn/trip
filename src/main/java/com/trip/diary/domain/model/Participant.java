@@ -26,4 +26,7 @@ public class Participant extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
+    public void setAccepted() {
+        this.type = ParticipantType.ACCEPTED;
+    }
 }
