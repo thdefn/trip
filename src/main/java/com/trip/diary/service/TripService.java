@@ -14,6 +14,7 @@ import com.trip.diary.exception.ErrorCode;
 import com.trip.diary.exception.MemberException;
 import com.trip.diary.exception.TripException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,8 +56,8 @@ public class TripService {
 
         Set<Long> participantsIds = form.getParticipants();
         participantsIds.add(member.getId());
-        applicationEventPublisher.publishEvent(new TripInviteEvent(participantsIds, trip.getId()));
 
+        applicationEventPublisher.publishEvent(new TripInviteEvent(participantsIds, trip.getId()));
         return CreateTripDto.of(trip, member.getId(),
                 participantRepository.saveAll(getParticipants(participantsIds, trip)));
     }
@@ -111,8 +112,6 @@ public class TripService {
 
         validationMemberHaveWriteAuthority(trip, member);
 
-        applicationEventPublisher.publishEvent(new TripInviteEvent(Set.of(targetId), trip.getId()));
-
         if (participantRepository.existsByTripAndMember(trip, target)) {
             throw new TripException(USER_ALREADY_INVITED);
         }
@@ -122,6 +121,8 @@ public class TripService {
                 .trip(trip)
                 .type(PENDING)
                 .build());
+
+        applicationEventPublisher.publishEvent(new TripInviteEvent(Set.of(targetId), trip.getId()));
     }
 
     private void validationMemberHaveWriteAuthority(Trip trip, Member member) {
@@ -131,6 +132,7 @@ public class TripService {
     }
 
     @Transactional
+    @CacheEvict(key = "{#tripId, #targetId}", value = "TripAuthorities")
     public void kickOut(Long tripId, Long targetId, Member member) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
@@ -139,12 +141,12 @@ public class TripService {
             throw new TripException(NOT_AUTHORITY_WRITE_TRIP);
         }
 
-        applicationEventPublisher.publishEvent(new TripKickOutEvent(targetId, tripId));
-
         participantRepository.findByTripAndMember_Id(trip, targetId)
                 .ifPresentOrElse(participantRepository::delete,
                         () -> {
                             throw new TripException(NOT_FOUND_PARTICIPANT);
                         });
+
+        applicationEventPublisher.publishEvent(new TripKickOutEvent(targetId, tripId));
     }
 }
