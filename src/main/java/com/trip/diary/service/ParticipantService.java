@@ -8,10 +8,13 @@ import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.TripRepository;
 import com.trip.diary.dto.ParticipantDto;
 import com.trip.diary.dto.TripDto;
+import com.trip.diary.event.dto.TripKickOutEvent;
 import com.trip.diary.exception.ErrorCode;
 import com.trip.diary.exception.ParticipantException;
 import com.trip.diary.exception.TripException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +31,8 @@ public class ParticipantService {
     private final TripRepository tripRepository;
 
     private final ParticipantRepository participantRepository;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public List<ParticipantDto> getTripParticipants(Long tripId, Member member) {
@@ -55,6 +60,7 @@ public class ParticipantService {
     }
 
     @Transactional
+    @CacheEvict(key = "{#tripId, #member.id}", value = "TripAuthorities")
     public void acceptTripInvitation(Long tripId, Member member) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
@@ -74,5 +80,6 @@ public class ParticipantService {
                 participantRepository.findByTripAndMemberAndType(trip, member, ParticipantType.PENDING)
                         .orElseThrow(() -> new ParticipantException(NOT_INVITED_TRIP));
         participantRepository.delete(participant);
+        applicationEventPublisher.publishEvent(new TripKickOutEvent(member.getId(), tripId));
     }
 }
