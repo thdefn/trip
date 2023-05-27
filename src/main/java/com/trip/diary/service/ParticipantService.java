@@ -62,7 +62,7 @@ public class ParticipantService {
         Participant participant =
                 participantRepository.findByTripAndMemberAndType(trip, member, ParticipantType.PENDING)
                         .orElseThrow(() -> new ParticipantException(NOT_INVITED_TRIP));
-        participant.accept();
+        participant.setAccepted();
     }
 
     @Transactional

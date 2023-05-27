@@ -1,7 +1,8 @@
 package com.trip.diary.dto;
 
-import com.trip.diary.domain.model.Participant;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.trip.diary.domain.constants.ParticipantType;
+import com.trip.diary.domain.model.Participant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 @Getter
 public class ParticipantDto {
     private Long id;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String nickname;
     private String profileUrl;
     private boolean isAccepted;
@@ -27,6 +29,14 @@ public class ParticipantDto {
                 .profileUrl(participant.getMember().getProfilePath())
                 .isAccepted(participant.getType().equals(ParticipantType.ACCEPTED))
                 .isReader(isReader)
+                .build();
+    }
+
+    public static ParticipantDto of(Long id, boolean isAccepted, String profileUrl) {
+        return ParticipantDto.builder()
+                .id(id)
+                .isAccepted(isAccepted)
+                .profileUrl(profileUrl)
                 .build();
     }
 }

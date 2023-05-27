@@ -22,26 +22,16 @@ public class TripDto {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<ParticipantDto> participants;
 
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Getter
-    public static class ParticipantDto {
-        private Long memberId;
-        private boolean isAccepted;
-        private String imagePath;
-    }
-
     public static TripDto of(Trip trip) {
         return TripDto.builder()
                 .id(trip.getId())
                 .title(trip.getTitle())
                 .description(trip.getDescription())
                 .participants(trip.getParticipants().stream().map(
-                        participant -> new ParticipantDto(
-                                participant.getMember().getId(),
+                        participant -> ParticipantDto.of(participant.getMember().getId(),
                                 ParticipantType.ACCEPTED.equals(participant.getType()),
-                                participant.getMember().getProfilePath())
-                ).collect(Collectors.toList()))
+                                participant.getMember().getProfilePath()))
+                        .collect(Collectors.toList()))
                 .build();
     }
 }

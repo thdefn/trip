@@ -92,7 +92,13 @@ class TripControllerTest {
                         .id(1L)
                         .title("임의의 타이틀")
                         .description("임의의 설명")
-                        .memberProfileUrls(List.of("basic.jpg", "basic.jpg"))
+                        .participants(List.of(
+                                ParticipantDto.builder()
+                                        .id(1L)
+                                        .profileUrl("profile/basic.jpg")
+                                        .isAccepted(false)
+                                        .build()
+                        ))
                         .build()
                 );
         //when
