@@ -9,24 +9,22 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @Slf4j
 @Getter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CommentDto {
     private Long id;
     private String content;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Integer countOfComments;
-    private long countOfLikes;
+    private Long countOfLikes;
     private Long authorId;
     private String authorNickname;
     private String authorProfilePath;
     private Boolean isReader;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean isReaderLiked;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<CommentDto> reComments;
@@ -61,13 +59,22 @@ public class CommentDto {
                 .id(comment.getId())
                 .content(comment.getContent())
                 .countOfLikes(countOfLikes)
-                .countOfComments(comment.getReComments().size())
+                .countOfComments(reCommentDtos.size())
                 .reComments(reCommentDtos)
                 .authorId(comment.getMember().getId())
                 .authorNickname(comment.getMember().getNickname())
                 .authorProfilePath(comment.getMember().getProfilePath())
                 .isReader(comment.getMember().isReader(readerId))
                 .isReaderLiked(isReaderLiked)
+                .build();
+    }
+
+    public static CommentDto blind(List<CommentDto> reCommentDtos) {
+        return CommentDto.builder()
+                .authorNickname("알수없음")
+                .content("삭제된 댓글입니다.")
+                .reComments(reCommentDtos)
+                .countOfComments(reCommentDtos.size())
                 .build();
     }
 }
