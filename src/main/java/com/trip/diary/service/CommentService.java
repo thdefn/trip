@@ -31,6 +31,7 @@ public class CommentService {
     private final PostRepository postRepository;
     private final ParticipantRepository participantRepository;
     private final CommentLikeRedisRepository commentLikeRedisRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public CommentDto create(Long postId, CreateCommentForm form, Member member) {
@@ -39,12 +40,22 @@ public class CommentService {
 
         validationMemberHaveWriteAuthority(post.getTrip(), member);
 
+        sendNotificationToPostAuthor(post.getTrip().getTitle(), post.getLocation().getName(),
+                postId, member, post.getMember().getId());
         return CommentDto.of(commentRepository.save(
                 Comment.builder()
                         .content(form.getContent())
                         .post(post)
                         .member(member)
                         .build()));
+    }
+
+    private void sendNotificationToPostAuthor(String tripTitle, String locationName, Long postId,
+                                              Member sender, Long receiverId) {
+        if (!Objects.equals(sender.getId(), receiverId)) {
+            notificationService.notifyComment(tripTitle, locationName, postId,
+                    sender.getNickname(), receiverId);
+        }
     }
 
     private void validationMemberHaveWriteAuthority(Trip trip, Member member) {
@@ -76,6 +87,8 @@ public class CommentService {
         }
 
         validationMemberHaveWriteAuthority(comment.getPost().getTrip(), member);
+        sendNotificationToCommentWriter(comment.getPost().getTrip().getTitle(),
+                comment.getContent(), comment.getPost().getId(), member, comment.getMember().getId());
 
         return CommentDto.of(commentRepository.save(
                 Comment.builder()
@@ -84,6 +97,14 @@ public class CommentService {
                         .parentComment(comment)
                         .member(member)
                         .build()));
+    }
+
+    private void sendNotificationToCommentWriter(String tripTitle, String commentContent, Long postId,
+                                              Member sender, Long receiverId) {
+        if (!Objects.equals(sender.getId(), receiverId)) {
+            notificationService.notifyReComment(tripTitle, commentContent, postId,
+                    sender.getNickname(), receiverId);
+        }
     }
 
     @Transactional

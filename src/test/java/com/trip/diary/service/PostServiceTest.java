@@ -1,8 +1,8 @@
 package com.trip.diary.service;
 
+import com.trip.diary.domain.constants.ParticipantType;
 import com.trip.diary.domain.model.*;
 import com.trip.diary.domain.repository.*;
-import com.trip.diary.domain.constants.ParticipantType;
 import com.trip.diary.dto.CreatePostForm;
 import com.trip.diary.dto.PostDetailDto;
 import com.trip.diary.dto.UpdatePostForm;
@@ -771,5 +771,88 @@ class PostServiceTest {
         //then
         assertEquals(ErrorCode.NOT_AUTHORITY_READ_TRIP, exception.getErrorCode());
     }
+
+    @Test
+    void readPostDetailTest_success() {
+        //given
+        given(postRepository.findById(any())).willReturn(
+                Optional.of(Post.builder()
+                        .id(1L)
+                        .content("제주도 도착입니당")
+                        .trip(trip)
+                        .member(member)
+                        .location(Location.builder()
+                                .trip(trip)
+                                .id(1L)
+                                .name("제주공항").build())
+                        .images(List.of(
+                                PostImage.builder()
+                                        .id(1L)
+                                        .imagePath("/post/uuid202030103030.jpg")
+                                        .build(),
+                                PostImage.builder()
+                                        .id(2L)
+                                        .imagePath("/post/uuid202030103031.jpg")
+                                        .build()
+                        ))
+                        .build()));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any()))
+                .willReturn(true);
+        given(postLikeRedisRepository.countByPostId(anyLong()))
+                .willReturn(1L);
+        given(postLikeRedisRepository.existsByPostIdAndUserId(anyLong(), anyLong()))
+                .willReturn(true);
+        //when
+        PostDetailDto result = postService.readPostDetail(1L, member);
+        //then
+        assertEquals(2, result.getImagePaths().size());
+        assertTrue(result.getIsReaderLiked());
+    }
+
+
+    @Test
+    @DisplayName("여행 기록 상세 조회 실패 - 해당 기록 없음")
+    void readPostDetailTest_failWhenNotFoundPost() {
+        //given
+        given(postRepository.findById(any())).willReturn(Optional.empty());
+        //when
+        PostException exception = assertThrows(PostException.class, () -> postService.readPostDetail(1L, member));
+        //then
+        assertEquals(ErrorCode.NOT_FOUND_POST, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("여행 기록 상세 조회 실패 - 여행 기록장에 대한 읽기 권한 없음")
+    void readPostDetailTest_failWhenNotAuthorityReadTrip() {
+        //given
+        given(postRepository.findById(any())).willReturn(
+                Optional.of(Post.builder()
+                        .id(1L)
+                        .content("제주도 도착입니당")
+                        .trip(trip)
+                        .member(member)
+                        .location(Location.builder()
+                                .trip(trip)
+                                .id(1L)
+                                .name("제주공항").build())
+                        .images(List.of(
+                                PostImage.builder()
+                                        .id(1L)
+                                        .imagePath("/post/uuid202030103030.jpg")
+                                        .build(),
+                                PostImage.builder()
+                                        .id(2L)
+                                        .imagePath("/post/uuid202030103031.jpg")
+                                        .build()
+                        ))
+                        .build()));
+        given(participantRepository.existsByTripAndMemberAndType(any(), any(), any()))
+                .willReturn(false);
+        //when
+        TripException exception = assertThrows(TripException.class, () -> postService.readPostDetail(1L, member));
+        //then
+        assertEquals(ErrorCode.NOT_AUTHORITY_READ_TRIP, exception.getErrorCode());
+    }
+
 
 }

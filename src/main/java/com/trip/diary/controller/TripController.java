@@ -2,6 +2,7 @@ package com.trip.diary.controller;
 
 import com.trip.diary.dto.*;
 import com.trip.diary.security.MemberPrincipal;
+import com.trip.diary.service.MemberSearchService;
 import com.trip.diary.service.TripService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.List;
 public class TripController {
 
     private final TripService tripService;
+    private final MemberSearchService memberSearchService;
 
     @PostMapping
     private ResponseEntity<CreateTripDto> createTrip(@Valid @RequestBody CreateTripForm form,
@@ -52,13 +54,13 @@ public class TripController {
     @GetMapping("/members/search")
     private ResponseEntity<List<MemberDto>> searchAddableMembers(@RequestParam String keyword,
                                                                  @AuthenticationPrincipal MemberPrincipal principal) {
-        return ResponseEntity.ok(tripService.searchAddableMembers(keyword, principal.getMember()));
+        return ResponseEntity.ok(memberSearchService.searchAddableMembers(keyword, principal.getMember()));
     }
 
     @GetMapping("/{tripId}/members/search")
     private ResponseEntity<List<MemberDto>> searchAddableMembersInTrip(@PathVariable Long tripId,
                                                                        @RequestParam String keyword,
                                                                        @AuthenticationPrincipal MemberPrincipal principal) {
-        return ResponseEntity.ok(tripService.searchAddableMembersInTrip(tripId, keyword, principal.getMember()));
+        return ResponseEntity.ok(memberSearchService.searchAddableMembersInTrip(tripId, keyword, principal.getMember()));
     }
 }

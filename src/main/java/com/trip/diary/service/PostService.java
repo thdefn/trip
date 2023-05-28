@@ -33,11 +33,11 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostImageRepository postImageRepository;
     private final TripRepository tripRepository;
-
     private final PostLikeRedisRepository postLikeRedisRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final ImageManager imageManager;
-    private final static String IMAGE_DOMAIN = "post";
+    private static final String IMAGE_DOMAIN = "post";
+    private static final int MINIMUM_SIZE_OF_LOCATION_POSTS = 1;
 
     @Transactional
     public PostDetailDto create(Long tripId, CreatePostForm form, List<MultipartFile> images, Member member) {
@@ -117,10 +117,11 @@ public class PostService {
             throw new PostException(NOT_POST_OWNER);
         }
 
-        if (post.getLocation().getPosts().size() == 1) {
+        if (post.getLocation().getPosts().size() == MINIMUM_SIZE_OF_LOCATION_POSTS) {
             locationRepository.delete(post.getLocation());
         }
         postRepository.delete(post);
+        postLikeRedisRepository.deleteAllByPostId(postId);
 
         applicationEventPublisher.publishEvent(
                 new ImageDeleteEvent(post.getImages().stream()
@@ -167,5 +168,18 @@ public class PostService {
         if (!participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED)) {
             throw new TripException(NOT_AUTHORITY_WRITE_TRIP);
         }
+    }
+
+    @Transactional
+    public PostDetailDto readPostDetail(Long postId, Member member) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(NOT_FOUND_POST));
+
+        validationMemberHaveReadAuthority(post.getTrip(), member);
+
+        return PostDetailDto.of(post,
+                postLikeRedisRepository.countByPostId(post.getId()),
+                postLikeRedisRepository.existsByPostIdAndUserId(post.getId(), member.getId()),
+                member.getId());
     }
 }

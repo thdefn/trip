@@ -121,6 +121,35 @@ class PostControllerTest {
 
     @Test
     @WithMockCustomUser
+    @DisplayName("여행 기록 상세 조회 성공")
+    void readPostDetailTest_success() throws Exception {
+        //given
+        given(postService.readPostDetail(anyLong(), any()))
+                .willReturn(PostDetailDto.builder()
+                        .id(1L)
+                        .content("드디어 여행 시작")
+                        .imagePaths(List.of("/posts/1.jpg", "/posts/2.jpg"))
+                        .locationId(1L)
+                        .locationName("김포공항")
+                        .authorId(1L)
+                        .countOfLikes(1L)
+                        .authorNickname("지금은새벽(나)")
+                        .authorProfilePath("/profile/basic.jpg")
+                        .isReader(true)
+                        .build());
+        //when
+        //then
+        mockMvc.perform(get("/trips/posts/{postId}", 1L)
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockCustomUser
     @DisplayName("여행 기록 삭제 성공")
     void deletePostTest_success() throws Exception {
         //given
