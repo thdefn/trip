@@ -1,7 +1,6 @@
 package com.trip.diary.service;
 
 import com.trip.diary.domain.model.Member;
-import com.trip.diary.domain.repository.MemberRepository;
 import com.trip.diary.dto.MemberDto;
 import com.trip.diary.elasticsearch.model.MemberDocument;
 import com.trip.diary.elasticsearch.repository.MemberSearchRepository;
@@ -11,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.convert.ElasticsearchConverter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,9 +24,11 @@ import static org.mockito.BDDMockito.given;
 class MemberSearchServiceTest {
 
     @Mock
-    private MemberRepository memberRepository;
-    @Mock
     private MemberSearchRepository memberSearchRepository;
+    @Mock
+    private ElasticsearchOperations elasticsearchOperations;
+    @Mock
+    private ElasticsearchConverter elasticsearchConverter;
     @InjectMocks
     private MemberSearchService memberSearchService;
 

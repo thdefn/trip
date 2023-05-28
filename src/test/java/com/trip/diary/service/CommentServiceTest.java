@@ -1,9 +1,6 @@
 package com.trip.diary.service;
 
-import com.trip.diary.domain.model.Comment;
-import com.trip.diary.domain.model.Member;
-import com.trip.diary.domain.model.Post;
-import com.trip.diary.domain.model.Trip;
+import com.trip.diary.domain.model.*;
 import com.trip.diary.domain.repository.CommentLikeRedisRepository;
 import com.trip.diary.domain.repository.CommentRepository;
 import com.trip.diary.domain.repository.ParticipantRepository;
@@ -79,6 +76,10 @@ class CommentServiceTest {
             .content("제주도 도착입니당")
             .member(member)
             .trip(trip)
+            .location(Location.builder()
+                    .id(1L)
+                    .name("제주공항")
+                    .build())
             .build();
 
     @Test

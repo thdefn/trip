@@ -44,6 +44,9 @@ class TripServiceTest {
     private ParticipantRepository participantRepository;
 
     @Mock
+    private NotificationService notificationService;
+
+    @Mock
     private ApplicationEventPublisher applicationEventPublisher;
 
     @InjectMocks

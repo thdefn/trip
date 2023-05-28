@@ -96,7 +96,7 @@ public class NotificationService {
 
     private String getCommentNoticeMessage(String tripTitle, String locationName, String senderNickname) {
         return "[" + tripTitle + "] " +
-                "[" + locationName + "] 사진에" +
+                "[" + locationName + "] 사진에 " +
                 senderNickname + "님이 댓글을 달았어요.";
     }
 
@@ -118,8 +118,8 @@ public class NotificationService {
     private String getReCommentNoticeMessage(String tripTitle, String commentContent, String senderNickname) {
         return "[" + tripTitle + "] " +
                 "[" +
-                ((commentContent.length() < 20) ? commentContent : commentContent.substring(0, 20)) +
-                "... ] 댓글에 " +
+                ((commentContent.length() < 21) ? commentContent : commentContent.substring(0, 20) + "...") +
+                "] 댓글에 " +
                 senderNickname + "님이 댓글을 달았어요.";
     }
 }

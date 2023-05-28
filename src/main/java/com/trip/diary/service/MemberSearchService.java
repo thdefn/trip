@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class MemberSearchService {
     private final MemberSearchRepository memberSearchRepository;
     private final ElasticsearchOperations elasticsearchOperations;
+    private static final String INDEX_NAME_OF_MEMBER = "members";
 
     public void addTripIdToMemberDocument(Set<Long> participantsIds, Long tripId) {
         List<UpdateQuery> updateQueries = memberSearchRepository.findByIdIn(participantsIds)
@@ -33,7 +34,7 @@ public class MemberSearchService {
                         }
                 ).collect(Collectors.toList());
 
-        elasticsearchOperations.bulkUpdate(updateQueries, IndexCoordinates.of("members"));
+        elasticsearchOperations.bulkUpdate(updateQueries, IndexCoordinates.of(INDEX_NAME_OF_MEMBER));
     }
 
     public void removeTripIdToMemberDocument(Long memberId, Long tripId) {
@@ -49,7 +50,7 @@ public class MemberSearchService {
                         }
                 ).collect(Collectors.toList());
 
-        elasticsearchOperations.bulkUpdate(updateQueries, IndexCoordinates.of("members"));
+        elasticsearchOperations.bulkUpdate(updateQueries, IndexCoordinates.of(INDEX_NAME_OF_MEMBER));
     }
 
     public List<MemberDto> searchAddableMembers(String keyword, Member member) {
