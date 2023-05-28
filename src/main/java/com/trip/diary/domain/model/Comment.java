@@ -9,8 +9,6 @@ import lombok.experimental.SuperBuilder;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static com.trip.diary.domain.constants.Constants.UNIDENTIFIED_MEMBER_ID;
-
 @Getter
 @SuperBuilder
 @AllArgsConstructor

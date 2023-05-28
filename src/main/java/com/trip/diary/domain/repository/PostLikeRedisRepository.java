@@ -27,4 +27,8 @@ public class PostLikeRedisRepository {
     public Long countByPostId(Long postId) {
         return redisClient.getSizeOfSet(POST_LIKE_KEY + postId);
     }
+
+    public void deleteAllByPostId(Long postId) {
+        redisClient.removeKeyToSet(POST_LIKE_KEY + postId);
+    }
 }
