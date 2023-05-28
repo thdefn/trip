@@ -3,6 +3,7 @@ package com.trip.diary.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.trip.diary.dto.*;
 import com.trip.diary.mockuser.WithMockCustomUser;
+import com.trip.diary.service.MemberSearchService;
 import com.trip.diary.service.TripService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,9 @@ class TripControllerTest {
 
     @MockBean
     private TripService tripService;
+
+    @MockBean
+    private MemberSearchService memberSearchService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -118,7 +122,7 @@ class TripControllerTest {
     @DisplayName("여행 기록장에 초대할 멤버 검색 성공")
     void searchAddableMembersTest_success() throws Exception {
         //given
-        given(tripService.searchAddableMembers(anyString(), any()))
+        given(memberSearchService.searchAddableMembers(anyString(), any()))
                 .willReturn(List.of(
                         MemberDto.builder()
                                 .id(1L)
@@ -152,7 +156,7 @@ class TripControllerTest {
     @DisplayName("생성된 여행 기록장에 초대할 멤버 검색 성공")
     void searchAddableMembersInTripTest_success() throws Exception {
         //given
-        given(tripService.searchAddableMembers(anyString(), any()))
+        given(memberSearchService.searchAddableMembers(anyString(), any()))
                 .willReturn(List.of(
                         MemberDto.builder()
                                 .id(1L)

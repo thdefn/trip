@@ -6,11 +6,12 @@ import com.trip.diary.domain.model.Trip;
 import com.trip.diary.domain.repository.MemberRepository;
 import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.TripRepository;
-import com.trip.diary.dto.*;
-import com.trip.diary.elasticsearch.repository.MemberSearchRepository;
+import com.trip.diary.dto.CreateTripDto;
+import com.trip.diary.dto.CreateTripForm;
+import com.trip.diary.dto.TripDto;
+import com.trip.diary.dto.UpdateTripForm;
 import com.trip.diary.event.dto.TripInviteEvent;
 import com.trip.diary.event.dto.TripKickOutEvent;
-import com.trip.diary.exception.ErrorCode;
 import com.trip.diary.exception.MemberException;
 import com.trip.diary.exception.TripException;
 import lombok.RequiredArgsConstructor;
@@ -33,15 +34,10 @@ import static com.trip.diary.exception.ErrorCode.*;
 public class TripService {
 
     private final TripRepository tripRepository;
-
     private final MemberRepository memberRepository;
-
     private final ParticipantRepository participantRepository;
-
-    private final MemberSearchRepository memberSearchRepository;
-
+    private final NotificationService notificationService;
     private final ApplicationEventPublisher applicationEventPublisher;
-
 
     @Transactional
     public CreateTripDto create(CreateTripForm form, Member member) {
@@ -57,6 +53,7 @@ public class TripService {
         Set<Long> participantsIds = form.getParticipants();
         participantsIds.add(member.getId());
 
+        notificationService.notifyInvitation(trip.getTitle(), member.getNickname(), participantsIds);
         applicationEventPublisher.publishEvent(new TripInviteEvent(participantsIds, trip.getId()));
         return CreateTripDto.of(trip, member.getId(),
                 participantRepository.saveAll(getParticipants(participantsIds, trip)));
@@ -88,26 +85,12 @@ public class TripService {
         return TripDto.of(tripRepository.save(trip));
     }
 
-    public List<MemberDto> searchAddableMembers(String keyword, Member member) {
-        return memberSearchRepository.findByNicknameContainsIgnoreCase(keyword).stream()
-                .filter(memberDocument -> !Objects.equals(memberDocument.getId(), member.getId()))
-                .map(MemberDto::of)
-                .collect(Collectors.toList());
-    }
-
-    public List<MemberDto> searchAddableMembersInTrip(Long tripId, String keyword, Member member) {
-        return memberSearchRepository.findByNicknameContainsIgnoreCase(keyword).stream()
-                .filter(memberDocument -> !Objects.equals(memberDocument.getId(), member.getId()))
-                .map(memberDocument -> MemberDto.of(memberDocument, tripId))
-                .collect(Collectors.toList());
-    }
-
     @Transactional
-    public void invite(Long tripId, Long targetId, Member member) {
+    public void invite(Long tripId, Long targetMemberId, Member member) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
 
-        Member target = memberRepository.findById(targetId)
+        Member target = memberRepository.findById(targetMemberId)
                 .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER));
 
         validationMemberHaveWriteAuthority(trip, member);
@@ -121,8 +104,8 @@ public class TripService {
                 .trip(trip)
                 .type(PENDING)
                 .build());
-
-        applicationEventPublisher.publishEvent(new TripInviteEvent(Set.of(targetId), trip.getId()));
+        notificationService.notifyInvitation(trip.getTitle(), member.getNickname(), Set.of(targetMemberId));
+        applicationEventPublisher.publishEvent(new TripInviteEvent(Set.of(targetMemberId), trip.getId()));
     }
 
     private void validationMemberHaveWriteAuthority(Trip trip, Member member) {

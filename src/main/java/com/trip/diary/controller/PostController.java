@@ -36,6 +36,12 @@ public class PostController {
         return ResponseEntity.ok(postService.update(postId, form, images, principal.getMember()));
     }
 
+    @GetMapping("/trips/posts/{postId}")
+    private ResponseEntity<PostDetailDto> readPostDetail(@PathVariable Long postId,
+                                                         @AuthenticationPrincipal MemberPrincipal principal) {
+        return ResponseEntity.ok(postService.readPostDetail(postId, principal.getMember()));
+    }
+
     @DeleteMapping("/trips/posts/{postId}")
     private ResponseEntity<Void> deletePost(@PathVariable Long postId,
                                             @AuthenticationPrincipal MemberPrincipal principal) {
