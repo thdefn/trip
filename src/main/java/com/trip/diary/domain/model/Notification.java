@@ -30,4 +30,8 @@ public class Notification extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
+
+    public void setReadAt() {
+        this.readAt = LocalDateTime.now();
+    }
 }
