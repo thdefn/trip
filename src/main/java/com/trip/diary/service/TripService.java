@@ -1,8 +1,11 @@
 package com.trip.diary.service;
 
+import com.trip.diary.domain.constants.Constants;
+import com.trip.diary.domain.model.Bookmark;
 import com.trip.diary.domain.model.Member;
 import com.trip.diary.domain.model.Participant;
 import com.trip.diary.domain.model.Trip;
+import com.trip.diary.domain.repository.BookmarkRepository;
 import com.trip.diary.domain.repository.MemberRepository;
 import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.TripRepository;
@@ -17,6 +20,9 @@ import com.trip.diary.exception.TripException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +31,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.trip.diary.domain.constants.Constants.*;
 import static com.trip.diary.domain.constants.ParticipantType.ACCEPTED;
 import static com.trip.diary.domain.constants.ParticipantType.PENDING;
 import static com.trip.diary.exception.ErrorCode.*;
@@ -36,6 +43,7 @@ public class TripService {
     private final TripRepository tripRepository;
     private final MemberRepository memberRepository;
     private final ParticipantRepository participantRepository;
+    private final BookmarkRepository bookmarkRepository;
     private final NotificationService notificationService;
     private final ApplicationEventPublisher applicationEventPublisher;
 
@@ -131,5 +139,31 @@ public class TripService {
                         });
 
         applicationEventPublisher.publishEvent(new TripKickOutEvent(targetId, tripId));
+    }
+
+    public void bookmark(Long tripId, Member member) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
+
+        bookmarkRepository.findByTripAndMember(trip, member)
+                .ifPresentOrElse(bookmarkRepository::delete,
+                        () -> bookmarkRepository.save(Bookmark.builder()
+                                .trip(trip)
+                                .member(member)
+                                .build()));
+    }
+
+    @Transactional
+    public Slice<TripDto> readBookmarks(int page, Member member) {
+        Slice<Bookmark> bookmarkSlice = bookmarkRepository
+                .findByMember(member, PageRequest.of(page, BOOKMARK_PAGE_SIZE));
+        return new SliceImpl<>(bookmarkSlice.stream()
+                .filter(bookmark -> isMemberHaveReadAuthority(bookmark.getTrip(), member))
+                .map(bookmark -> TripDto.of(bookmark.getTrip()))
+                .collect(Collectors.toList()), bookmarkSlice.getPageable(), bookmarkSlice.hasNext());
+    }
+
+    private boolean isMemberHaveReadAuthority(Trip trip, Member member) {
+        return (!trip.isPrivate() || participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED));
     }
 }

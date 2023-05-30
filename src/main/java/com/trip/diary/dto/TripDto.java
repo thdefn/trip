@@ -28,9 +28,9 @@ public class TripDto {
                 .title(trip.getTitle())
                 .description(trip.getDescription())
                 .participants(trip.getParticipants().stream().map(
-                        participant -> ParticipantDto.of(participant.getMember().getId(),
-                                ParticipantType.ACCEPTED.equals(participant.getType()),
-                                participant.getMember().getProfilePath()))
+                                participant -> ParticipantDto.of(participant.getMember().getId(),
+                                        ParticipantType.ACCEPTED.equals(participant.getType()),
+                                        participant.getMember().getProfilePath()))
                         .collect(Collectors.toList()))
                 .build();
     }
