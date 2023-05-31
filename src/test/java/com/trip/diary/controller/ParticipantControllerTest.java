@@ -145,4 +145,20 @@ class ParticipantControllerTest {
                 .andExpect(status().isOk());
     }
 
+    @Test
+    @WithMockCustomUser
+    @DisplayName("여행 기록장에 유저 초대 or 초대 취소 성공")
+    void inviteOrCancelTest_success() throws Exception {
+        //given
+        //when
+        //then
+        mockMvc.perform(put("/trips/{tripId}/members/{memberId}", 1L, 1L)
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
 }
