@@ -32,7 +32,7 @@ public class TripDocument extends BaseDocument {
 
     @AllArgsConstructor
     @Getter
-    private static class Location {
+    public static class Location {
         @Field(type = FieldType.Keyword)
         private String name;
     }

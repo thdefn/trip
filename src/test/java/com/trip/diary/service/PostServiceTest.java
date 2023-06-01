@@ -776,6 +776,7 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("여행 기록 상세 조회 성공")
     void readPostDetailTest_success() {
         //given
         given(postRepository.findById(any())).willReturn(

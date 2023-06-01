@@ -24,7 +24,7 @@ public class MemberSearchService {
         elasticSearchClient.save(MemberDocument.from(member));
     }
 
-    public void addTripToMemberDocument(Set<Long> participantsIds, Long tripId) {
+    public void addTripToMemberDocuments(Set<Long> participantsIds, Long tripId) {
         elasticSearchClient.update(INDEX_NAME_OF_MEMBER,
                 memberSearchRepository.findByIdIn(participantsIds).stream()
                         .peek(memberDocument -> memberDocument.addTripId(tripId))

@@ -1,17 +1,17 @@
 package com.trip.diary.service;
 
+import com.trip.diary.domain.constants.ParticipantType;
 import com.trip.diary.domain.model.Member;
 import com.trip.diary.domain.model.Participant;
 import com.trip.diary.domain.model.Trip;
 import com.trip.diary.domain.repository.MemberRepository;
 import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.TripRepository;
-import com.trip.diary.domain.constants.ParticipantType;
-import com.trip.diary.dto.*;
-import com.trip.diary.elasticsearch.model.MemberDocument;
-import com.trip.diary.elasticsearch.repository.MemberSearchRepository;
+import com.trip.diary.dto.CreateTripDto;
+import com.trip.diary.dto.CreateTripForm;
+import com.trip.diary.dto.TripDto;
+import com.trip.diary.dto.UpdateTripForm;
 import com.trip.diary.exception.ErrorCode;
-import com.trip.diary.exception.MemberException;
 import com.trip.diary.exception.TripException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,13 +21,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -177,6 +175,11 @@ class TripServiceTest {
                         .title("타이틀입니다")
                         .isPrivate(true)
                         .description("설명입니다")
+                        .participants(List.of(
+                                Participant.builder()
+                                        .trip(trip).member(member).build()
+                        ))
+                        .locations(new ArrayList<>())
                         .leader(member)
                         .build());
         //when

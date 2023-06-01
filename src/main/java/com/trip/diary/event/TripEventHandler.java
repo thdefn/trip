@@ -19,7 +19,7 @@ public class TripEventHandler {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleTripCreateEvent(TripCreateEvent event) {
         tripSearchService.save(event.getTrip());
-        memberSearchService.addTripToMemberDocument(event.getParticipantsIds(), event.getTrip().getId());
+        memberSearchService.addTripToMemberDocuments(event.getParticipantsIds(), event.getTrip().getId());
     }
 
     @Async
@@ -31,7 +31,7 @@ public class TripEventHandler {
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void handleTripInviteEvent(TripInviteEvent event) {
-        memberSearchService.addTripToMemberDocument(event.getParticipantsIds(), event.getTripId());
+        memberSearchService.addTripToMemberDocuments(event.getParticipantsIds(), event.getTripId());
     }
 
     @Async

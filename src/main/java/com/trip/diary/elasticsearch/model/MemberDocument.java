@@ -29,7 +29,7 @@ public class MemberDocument extends BaseDocument {
 
     @AllArgsConstructor
     @Getter
-    private static class Trip {
+    public static class Trip {
         @Field(type = FieldType.Long)
         private Long id;
     }
