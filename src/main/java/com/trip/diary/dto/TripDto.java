@@ -2,6 +2,7 @@ package com.trip.diary.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.trip.diary.domain.constants.ParticipantType;
+import com.trip.diary.domain.model.Location;
 import com.trip.diary.domain.model.Trip;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,6 +22,7 @@ public class TripDto {
     private String description;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<ParticipantDto> participants;
+    private List<String> locations;
 
     public static TripDto of(Trip trip) {
         return TripDto.builder()
@@ -28,10 +30,12 @@ public class TripDto {
                 .title(trip.getTitle())
                 .description(trip.getDescription())
                 .participants(trip.getParticipants().stream().map(
-                        participant -> ParticipantDto.of(participant.getMember().getId(),
-                                ParticipantType.ACCEPTED.equals(participant.getType()),
-                                participant.getMember().getProfilePath()))
+                                participant -> ParticipantDto.of(participant.getMember().getId(),
+                                        ParticipantType.ACCEPTED.equals(participant.getType()),
+                                        participant.getMember().getProfilePath()))
                         .collect(Collectors.toList()))
+                .locations(trip.getLocations().stream()
+                        .map(Location::getName).collect(Collectors.toList()))
                 .build();
     }
 }

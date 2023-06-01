@@ -17,18 +17,18 @@ public class ParticipantDto {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String nickname;
     private String profileUrl;
-    private boolean isAccepted;
-    private boolean isReader;
+    private Boolean isAccepted;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean isReader;
 
     public static ParticipantDto of(Participant participant, Long readerId) {
-        boolean isReader = readerId.equals(participant.getMember().getId());
         return ParticipantDto.builder()
                 .id(participant.getMember().getId())
-                .nickname(isReader ? participant.getMember().getNickname() + "(나)"
+                .nickname(participant.getMember().isReader(readerId) ? participant.getMember().getNickname() + "(나)"
                         : participant.getMember().getNickname())
                 .profileUrl(participant.getMember().getProfilePath())
                 .isAccepted(participant.getType().equals(ParticipantType.ACCEPTED))
-                .isReader(isReader)
+                .isReader(participant.getMember().isReader(readerId))
                 .build();
     }
 

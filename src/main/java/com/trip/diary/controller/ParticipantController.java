@@ -41,4 +41,20 @@ public class ParticipantController {
         participantService.denyTripInvitation(tripId, principal.getMember());
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/trips/{tripId}/members/{memberId}")
+    private ResponseEntity<Void> inviteOrCancel(@PathVariable Long tripId,
+                                                @PathVariable Long memberId,
+                                                @AuthenticationPrincipal MemberPrincipal principal) {
+        participantService.invite(tripId, memberId, principal.getMember());
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/trips/{tripId}/members/{memberId}")
+    private ResponseEntity<Void> kickOut(@PathVariable Long tripId,
+                                         @PathVariable Long memberId,
+                                         @AuthenticationPrincipal MemberPrincipal principal) {
+        participantService.kickOut(tripId, memberId, principal.getMember());
+        return ResponseEntity.ok().build();
+    }
 }

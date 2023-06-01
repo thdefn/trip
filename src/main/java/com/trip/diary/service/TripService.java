@@ -10,12 +10,10 @@ import com.trip.diary.dto.CreateTripDto;
 import com.trip.diary.dto.CreateTripForm;
 import com.trip.diary.dto.TripDto;
 import com.trip.diary.dto.UpdateTripForm;
-import com.trip.diary.event.dto.TripInviteEvent;
-import com.trip.diary.event.dto.TripKickOutEvent;
-import com.trip.diary.exception.MemberException;
+import com.trip.diary.event.dto.TripCreateEvent;
+import com.trip.diary.event.dto.TripUpdateEvent;
 import com.trip.diary.exception.TripException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,12 +25,12 @@ import java.util.stream.Collectors;
 
 import static com.trip.diary.domain.constants.ParticipantType.ACCEPTED;
 import static com.trip.diary.domain.constants.ParticipantType.PENDING;
-import static com.trip.diary.exception.ErrorCode.*;
+import static com.trip.diary.exception.ErrorCode.NOT_AUTHORITY_WRITE_TRIP;
+import static com.trip.diary.exception.ErrorCode.NOT_FOUND_TRIP;
 
 @Service
 @RequiredArgsConstructor
 public class TripService {
-
     private final TripRepository tripRepository;
     private final MemberRepository memberRepository;
     private final ParticipantRepository participantRepository;
@@ -54,7 +52,7 @@ public class TripService {
         participantsIds.add(member.getId());
 
         notificationService.notifyInvitation(trip.getTitle(), member.getNickname(), participantsIds);
-        applicationEventPublisher.publishEvent(new TripInviteEvent(participantsIds, trip.getId()));
+        applicationEventPublisher.publishEvent(new TripCreateEvent(trip, participantsIds));
         return CreateTripDto.of(trip, member.getId(),
                 participantRepository.saveAll(getParticipants(participantsIds, trip)));
     }
@@ -81,55 +79,7 @@ public class TripService {
         }
 
         trip.update(form);
-
+        applicationEventPublisher.publishEvent(new TripUpdateEvent(trip));
         return TripDto.of(tripRepository.save(trip));
-    }
-
-    @Transactional
-    public void invite(Long tripId, Long targetMemberId, Member member) {
-        Trip trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
-
-        Member target = memberRepository.findById(targetMemberId)
-                .orElseThrow(() -> new MemberException(NOT_FOUND_MEMBER));
-
-        validationMemberHaveWriteAuthority(trip, member);
-
-        if (participantRepository.existsByTripAndMember(trip, target)) {
-            throw new TripException(USER_ALREADY_INVITED);
-        }
-
-        participantRepository.save(Participant.builder()
-                .member(target)
-                .trip(trip)
-                .type(PENDING)
-                .build());
-        notificationService.notifyInvitation(trip.getTitle(), member.getNickname(), Set.of(targetMemberId));
-        applicationEventPublisher.publishEvent(new TripInviteEvent(Set.of(targetMemberId), trip.getId()));
-    }
-
-    private void validationMemberHaveWriteAuthority(Trip trip, Member member) {
-        if (!participantRepository.existsByTripAndMemberAndType(trip, member, ACCEPTED)) {
-            throw new TripException(NOT_AUTHORITY_WRITE_TRIP);
-        }
-    }
-
-    @Transactional
-    @CacheEvict(key = "{#tripId, #targetId}", value = "TripAuthorities")
-    public void kickOut(Long tripId, Long targetId, Member member) {
-        Trip trip = tripRepository.findById(tripId)
-                .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
-
-        if (!Objects.equals(trip.getLeader().getId(), member.getId())) {
-            throw new TripException(NOT_AUTHORITY_WRITE_TRIP);
-        }
-
-        participantRepository.findByTripAndMember_Id(trip, targetId)
-                .ifPresentOrElse(participantRepository::delete,
-                        () -> {
-                            throw new TripException(NOT_FOUND_PARTICIPANT);
-                        });
-
-        applicationEventPublisher.publishEvent(new TripKickOutEvent(targetId, tripId));
     }
 }
