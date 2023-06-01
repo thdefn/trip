@@ -24,14 +24,14 @@ public class MemberSearchService {
         elasticSearchClient.save(MemberDocument.from(member));
     }
 
-    public void addTripIdToMemberDocument(Set<Long> participantsIds, Long tripId) {
+    public void addTripToMemberDocument(Set<Long> participantsIds, Long tripId) {
         elasticSearchClient.update(INDEX_NAME_OF_MEMBER,
                 memberSearchRepository.findByIdIn(participantsIds).stream()
                         .peek(memberDocument -> memberDocument.addTripId(tripId))
                         .collect(Collectors.toList()));
     }
 
-    public void removeTripIdToMemberDocument(Long memberId, Long tripId) {
+    public void removeTripToMemberDocument(Long memberId, Long tripId) {
         memberSearchRepository.findById(memberId)
                 .ifPresent(memberDocument -> {
                     memberDocument.removeTripId(tripId);

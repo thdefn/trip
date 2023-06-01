@@ -439,6 +439,7 @@ class PostServiceTest {
                 .content("김포공항 도착입니당")
                 .location(location)
                 .member(member)
+                .trip(trip)
                 .images(List.of(
                         PostImage.builder()
                                 .id(1L)
@@ -477,6 +478,7 @@ class PostServiceTest {
                 .id(1L)
                 .content("김포공항 도착입니당")
                 .location(location)
+                .trip(trip)
                 .member(member)
                 .images(List.of(
                         PostImage.builder()
@@ -518,6 +520,7 @@ class PostServiceTest {
                 .id(1L)
                 .content("김포공항 도착입니당")
                 .member(participant1)
+                .trip(trip)
                 .images(List.of(
                         PostImage.builder()
                                 .id(1L)

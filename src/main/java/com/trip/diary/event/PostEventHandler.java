@@ -15,7 +15,7 @@ public class PostEventHandler {
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void deleteImageInStorage(ImageDeleteEvent event){
+    public void deleteImageInStorage(ImageDeleteEvent event) {
         imageManager.deleteImages(event.getImagePaths());
     }
 }

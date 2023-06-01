@@ -10,7 +10,8 @@ import com.trip.diary.dto.CreateTripDto;
 import com.trip.diary.dto.CreateTripForm;
 import com.trip.diary.dto.TripDto;
 import com.trip.diary.dto.UpdateTripForm;
-import com.trip.diary.event.dto.TripInviteEvent;
+import com.trip.diary.event.dto.TripCreateEvent;
+import com.trip.diary.event.dto.TripUpdateEvent;
 import com.trip.diary.exception.TripException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -51,7 +52,7 @@ public class TripService {
         participantsIds.add(member.getId());
 
         notificationService.notifyInvitation(trip.getTitle(), member.getNickname(), participantsIds);
-        applicationEventPublisher.publishEvent(new TripInviteEvent(participantsIds, trip.getId()));
+        applicationEventPublisher.publishEvent(new TripCreateEvent(trip, participantsIds));
         return CreateTripDto.of(trip, member.getId(),
                 participantRepository.saveAll(getParticipants(participantsIds, trip)));
     }
@@ -78,7 +79,7 @@ public class TripService {
         }
 
         trip.update(form);
-
+        applicationEventPublisher.publishEvent(new TripUpdateEvent(trip));
         return TripDto.of(tripRepository.save(trip));
     }
 }
