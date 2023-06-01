@@ -2,8 +2,10 @@ package com.trip.diary.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.trip.diary.domain.constants.ParticipantType;
+import com.trip.diary.domain.model.Bookmark;
 import com.trip.diary.domain.model.Location;
 import com.trip.diary.domain.model.Trip;
+import com.trip.diary.elasticsearch.model.TripDocument;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,6 +22,8 @@ public class TripDto {
     private Long id;
     private String title;
     private String description;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean isBookmarked;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<ParticipantDto> participants;
     private List<String> locations;
@@ -36,6 +40,29 @@ public class TripDto {
                         .collect(Collectors.toList()))
                 .locations(trip.getLocations().stream()
                         .map(Location::getName).collect(Collectors.toList()))
+                .build();
+    }
+
+    public static TripDto of(Bookmark bookmark) {
+        return TripDto.builder()
+                .id(bookmark.getTrip().getId())
+                .title(bookmark.getTrip().getTitle())
+                .description(bookmark.getTrip().getDescription())
+                .isBookmarked(true)
+                .locations(bookmark.getTrip().getLocations().stream()
+                        .map(Location::getName).collect(Collectors.toList()))
+                .build();
+    }
+
+    public static TripDto of(TripDocument document, boolean isBookmarked){
+        return TripDto.builder()
+                .id(document.getId())
+                .title(document.getTitle())
+                .description(document.getDescription())
+                .isBookmarked(isBookmarked)
+                .locations(document.getLocations().stream()
+                        .map(TripDocument.Location::getName)
+                        .collect(Collectors.toList()))
                 .build();
     }
 }
