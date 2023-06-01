@@ -1,8 +1,8 @@
 package com.trip.diary.elasticsearch.model;
 
 import com.trip.diary.domain.model.Member;
-import jakarta.persistence.Id;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
@@ -11,15 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Document(indexName = "members")
-public class MemberDocument {
-    @Id
-    private Long id;
-
+public class MemberDocument extends BaseDocument {
     private String nickname;
 
     private String profileUrl;
@@ -35,8 +32,7 @@ public class MemberDocument {
         private Long id;
     }
 
-
-    public static MemberDocument of(Member member) {
+    public static MemberDocument from(Member member) {
         return MemberDocument.builder()
                 .id(member.getId())
                 .nickname(member.getNickname())
