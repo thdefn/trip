@@ -3,6 +3,8 @@ package com.trip.diary.service;
 import com.trip.diary.client.ElasticSearchClient;
 import com.trip.diary.domain.model.Member;
 import com.trip.diary.domain.model.Trip;
+import com.trip.diary.domain.repository.BookmarkRepository;
+import com.trip.diary.dto.TripDto;
 import com.trip.diary.elasticsearch.model.TripDocument;
 import com.trip.diary.elasticsearch.repository.TripSearchRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -12,15 +14,15 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -29,6 +31,9 @@ import static org.mockito.Mockito.verify;
 class TripSearchServiceTest {
     @Mock
     private TripSearchRepository tripSearchRepository;
+
+    @Mock
+    private BookmarkRepository bookmarkRepository;
 
     @Mock
     private ElasticSearchClient elasticSearchClient;
@@ -138,6 +143,66 @@ class TripSearchServiceTest {
         //then
         verify(elasticSearchClient, times(1)).update(anyString(), captor.capture());
         assertEquals(0, captor.getValue().getLocations().size());
+    }
+
+    @Test
+    @DisplayName("여행 기록장 검색 성공")
+    void searchTest_success() {
+        //given
+        List<TripDocument.Location> locations = new ArrayList<>();
+        locations.add(new TripDocument.Location("경주월드"));
+        locations.add(new TripDocument.Location("안압지"));
+        locations.add(new TripDocument.Location("경주월드"));
+        given(tripSearchRepository.findByKeyword(anyString(), anyString(), any()))
+                .willReturn(new PageImpl<>(
+                        List.of(TripDocument.builder()
+                                .id(3L)
+                                .title("경주여행")
+                                .description("경주가 최고")
+                                .locations(locations)
+                                .isPrivate(false)
+                                .build())
+                ));
+        given(bookmarkRepository.existsByTrip_IdAndMember(anyLong(), any()))
+                .willReturn(false);
+        //when
+        Page<TripDto> result = tripSearchService.search(0, "경주", member);
+        //then
+        assertEquals(3L, result.getContent().get(0).getId());
+        assertEquals("경주여행", result.getContent().get(0).getTitle());
+        assertEquals("경주가 최고", result.getContent().get(0).getDescription());
+        assertFalse(result.getContent().get(0).getIsBookmarked());
+        assertEquals(2, result.getContent().get(0).getLocations().size());
+    }
+
+    @Test
+    @DisplayName("여행 기록장 로케이션으로 검색 성공")
+    void searchByLocationTest_success() {
+        //given
+        List<TripDocument.Location> locations = new ArrayList<>();
+        locations.add(new TripDocument.Location("경주월드"));
+        locations.add(new TripDocument.Location("안압지"));
+        locations.add(new TripDocument.Location("경주월드"));
+        given(tripSearchRepository.findByLocationsName(anyString(), any()))
+                .willReturn(new PageImpl<>(
+                        List.of(TripDocument.builder()
+                                .id(3L)
+                                .title("경주여행")
+                                .description("경주가 최고")
+                                .locations(locations)
+                                .isPrivate(false)
+                                .build())
+                ));
+        given(bookmarkRepository.existsByTrip_IdAndMember(anyLong(), any()))
+                .willReturn(false);
+        //when
+        Page<TripDto> result = tripSearchService.searchByLocation(0, "경주월드", member);
+        //then
+        assertEquals(3L, result.getContent().get(0).getId());
+        assertEquals("경주여행", result.getContent().get(0).getTitle());
+        assertEquals("경주가 최고", result.getContent().get(0).getDescription());
+        assertFalse(result.getContent().get(0).getIsBookmarked());
+        assertEquals(2, result.getContent().get(0).getLocations().size());
     }
 
 }

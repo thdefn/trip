@@ -20,8 +20,8 @@ public interface TripSearchRepository extends ElasticsearchRepository<TripDocume
             "    \"filter\": [{\"term\": {\"isPrivate\": false}}], \"minimum_should_match\": 1}}")
     Page<TripDocument> findByKeyword(String keyword, String locationName, Pageable pageable);
 
-    @Query("\"bool\": { \"must\": [ \n" +
-            "    {\"term\": {\"locations.name\": \"?0\"}}],\n" +
-            "    \"filter\": [{\"term\": {\"isPrivate\": false}}]}")
+    @Query("{\"bool\": { \"must\": [ \n" +
+            "    {\"term\": {\"locations.name\": \"김포공항\"}}],\n" +
+            "    \"filter\": [{\"term\": {\"isPrivate\": false}}]}}")
     Page<TripDocument> findByLocationsName(String locationName, Pageable pageable);
 }

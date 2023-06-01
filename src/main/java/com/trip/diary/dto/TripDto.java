@@ -12,6 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -26,7 +27,7 @@ public class TripDto {
     private Boolean isBookmarked;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<ParticipantDto> participants;
-    private List<String> locations;
+    private Set<String> locations;
 
     public static TripDto of(Trip trip) {
         return TripDto.builder()
@@ -39,7 +40,7 @@ public class TripDto {
                                         participant.getMember().getProfilePath()))
                         .collect(Collectors.toList()))
                 .locations(trip.getLocations().stream()
-                        .map(Location::getName).collect(Collectors.toList()))
+                        .map(Location::getName).collect(Collectors.toSet()))
                 .build();
     }
 
@@ -50,11 +51,11 @@ public class TripDto {
                 .description(bookmark.getTrip().getDescription())
                 .isBookmarked(true)
                 .locations(bookmark.getTrip().getLocations().stream()
-                        .map(Location::getName).collect(Collectors.toList()))
+                        .map(Location::getName).collect(Collectors.toSet()))
                 .build();
     }
 
-    public static TripDto of(TripDocument document, boolean isBookmarked){
+    public static TripDto of(TripDocument document, boolean isBookmarked) {
         return TripDto.builder()
                 .id(document.getId())
                 .title(document.getTitle())
@@ -62,7 +63,7 @@ public class TripDto {
                 .isBookmarked(isBookmarked)
                 .locations(document.getLocations().stream()
                         .map(TripDocument.Location::getName)
-                        .collect(Collectors.toList()))
+                        .collect(Collectors.toSet()))
                 .build();
     }
 }

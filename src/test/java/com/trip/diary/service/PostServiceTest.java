@@ -239,8 +239,8 @@ class PostServiceTest {
         //then
         verify(postRepository, times(1)).save(postCaptor.capture());
         verify(locationRepository, times(1)).save(locationCaptor.capture());
-        assertEquals("아베베 베이커리", postCaptor.getValue().getLocation().getName());
-        assertEquals("아베베 베이커리", locationCaptor.getValue().getName());
+        assertEquals("아베베베이커리", postCaptor.getValue().getLocation().getName());
+        assertEquals("아베베베이커리", locationCaptor.getValue().getName());
         assertEquals("/post/1.jpg", locationCaptor.getValue().getThumbnailPath());
     }
 
