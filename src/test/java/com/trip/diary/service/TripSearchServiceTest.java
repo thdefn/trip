@@ -4,6 +4,8 @@ import com.trip.diary.client.ElasticSearchClient;
 import com.trip.diary.domain.model.Member;
 import com.trip.diary.domain.model.Trip;
 import com.trip.diary.domain.repository.BookmarkRepository;
+import com.trip.diary.domain.repository.TripRepositoryCustom;
+import com.trip.diary.dto.TripBookmarkDto;
 import com.trip.diary.dto.TripDto;
 import com.trip.diary.elasticsearch.model.TripDocument;
 import com.trip.diary.elasticsearch.repository.TripSearchRepository;
@@ -34,6 +36,9 @@ class TripSearchServiceTest {
 
     @Mock
     private BookmarkRepository bookmarkRepository;
+
+    @Mock
+    private TripRepositoryCustom tripRepositoryCustom;
 
     @Mock
     private ElasticSearchClient elasticSearchClient;
@@ -203,6 +208,48 @@ class TripSearchServiceTest {
         assertEquals("경주가 최고", result.getContent().get(0).getDescription());
         assertFalse(result.getContent().get(0).getIsBookmarked());
         assertEquals(2, result.getContent().get(0).getLocations().size());
+    }
+
+    @Test
+    @DisplayName("여행 기록장 북마크 순으로 검색 성공")
+    void searchByKeywordOrderByBookmarkTest_success() {
+        //given
+        given(tripRepositoryCustom.findByKeywordContainsOrderByBookmark(anyString(), any()))
+                .willReturn(new PageImpl<>(
+                        List.of(
+                                TripBookmarkDto.builder()
+                                        .tripId(1L)
+                                        .title("제주도")
+                                        .isPrivate(false)
+                                        .description("제주도입니닷")
+                                        .countOfBookmarked(3L)
+                                        .build(),
+                                TripBookmarkDto.builder()
+                                        .tripId(2L)
+                                        .title("제주도 여행기")
+                                        .isPrivate(false)
+                                        .description("5명이서 제주도간다")
+                                        .countOfBookmarked(1L)
+                                        .build()
+                        )
+                ));
+        given(bookmarkRepository.existsByTrip_IdAndMember(1L, member))
+                .willReturn(true);
+        given(bookmarkRepository.existsByTrip_IdAndMember(2L, member))
+                .willReturn(false);
+        //when
+        Page<TripDto> result = tripSearchService.searchByKeywordOrderByBookmark(0, "제주도", member);
+        //then
+        assertEquals(3L, result.getContent().get(0).getCountOfBookmark());
+        assertTrue(result.getContent().get(0).getIsBookmarked());
+        assertEquals(1L, result.getContent().get(0).getId());
+        assertEquals("제주도", result.getContent().get(0).getTitle());
+        assertEquals("제주도입니닷", result.getContent().get(0).getDescription());
+        assertEquals(1L, result.getContent().get(1).getCountOfBookmark());
+        assertFalse(result.getContent().get(1).getIsBookmarked());
+        assertEquals(2L, result.getContent().get(1).getId());
+        assertEquals("제주도 여행기", result.getContent().get(1).getTitle());
+        assertEquals("5명이서 제주도간다", result.getContent().get(1).getDescription());
     }
 
 }

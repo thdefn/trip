@@ -99,4 +99,42 @@ class TripSearchControllerTest {
 
     }
 
+    @Test
+    @WithMockCustomUser
+    @DisplayName("여행 기록장 북마크 순으로 검색 성공")
+    void searchByKeywordOrderByBookmarkTest_success() throws Exception {
+        //given
+        given(tripSearchService.searchByLocation(anyInt(), anyString(), any()))
+                .willReturn(new PageImpl<>(
+                        List.of(
+                                TripDto.builder()
+                                        .id(1L)
+                                        .title("제주도가 최고")
+                                        .description("제주도 한달살기")
+                                        .isBookmarked(true)
+                                        .countOfBookmark(3L)
+                                        .build(),
+                                TripDto.builder()
+                                        .id(2L)
+                                        .title("경주가 최고")
+                                        .description("경주 한달살기")
+                                        .isBookmarked(false)
+                                        .countOfBookmark(2L)
+                                        .build()
+                        )
+                ));
+        //when
+        //then
+        mockMvc.perform(get("/trips/bookmarks/search")
+                        .param("keyword", "한달살기")
+                        .param("page", "0")
+                        .header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk());
+
+
+    }
+
 }

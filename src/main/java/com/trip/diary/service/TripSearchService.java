@@ -4,6 +4,7 @@ import com.trip.diary.client.ElasticSearchClient;
 import com.trip.diary.domain.model.Member;
 import com.trip.diary.domain.model.Trip;
 import com.trip.diary.domain.repository.BookmarkRepository;
+import com.trip.diary.domain.repository.TripRepositoryCustom;
 import com.trip.diary.dto.TripDto;
 import com.trip.diary.elasticsearch.model.TripDocument;
 import com.trip.diary.elasticsearch.repository.TripSearchRepository;
@@ -19,6 +20,7 @@ import static com.trip.diary.domain.constants.Constants.SEARCH_PAGE_SIZE;
 public class TripSearchService {
     private final TripSearchRepository tripSearchRepository;
     private final BookmarkRepository bookmarkRepository;
+    private final TripRepositoryCustom tripRepositoryCustom;
     private final ElasticSearchClient elasticSearchClient;
     private static final String INDEX_NAME_OF_TRIP = "trips";
 
@@ -66,5 +68,12 @@ public class TripSearchService {
                 .findByLocationsName(keyword.replace(" ", ""), PageRequest.of(page, SEARCH_PAGE_SIZE))
                 .map(tripDocument -> TripDto.of(tripDocument,
                         bookmarkRepository.existsByTrip_IdAndMember(tripDocument.getId(), member)));
+    }
+
+    public Page<TripDto> searchByKeywordOrderByBookmark(int page, String keyword, Member member) {
+        return tripRepositoryCustom
+                .findByKeywordContainsOrderByBookmark(keyword, PageRequest.of(page, SEARCH_PAGE_SIZE))
+                .map(tripBookmarkDto -> TripDto.of(tripBookmarkDto,
+                        bookmarkRepository.existsByTrip_IdAndMember(tripBookmarkDto.getTripId(), member)));
     }
 }
