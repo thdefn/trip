@@ -239,8 +239,8 @@ class PostServiceTest {
         //then
         verify(postRepository, times(1)).save(postCaptor.capture());
         verify(locationRepository, times(1)).save(locationCaptor.capture());
-        assertEquals("아베베 베이커리", postCaptor.getValue().getLocation().getName());
-        assertEquals("아베베 베이커리", locationCaptor.getValue().getName());
+        assertEquals("아베베베이커리", postCaptor.getValue().getLocation().getName());
+        assertEquals("아베베베이커리", locationCaptor.getValue().getName());
         assertEquals("/post/1.jpg", locationCaptor.getValue().getThumbnailPath());
     }
 
@@ -439,6 +439,7 @@ class PostServiceTest {
                 .content("김포공항 도착입니당")
                 .location(location)
                 .member(member)
+                .trip(trip)
                 .images(List.of(
                         PostImage.builder()
                                 .id(1L)
@@ -477,6 +478,7 @@ class PostServiceTest {
                 .id(1L)
                 .content("김포공항 도착입니당")
                 .location(location)
+                .trip(trip)
                 .member(member)
                 .images(List.of(
                         PostImage.builder()
@@ -518,6 +520,7 @@ class PostServiceTest {
                 .id(1L)
                 .content("김포공항 도착입니당")
                 .member(participant1)
+                .trip(trip)
                 .images(List.of(
                         PostImage.builder()
                                 .id(1L)
@@ -773,6 +776,7 @@ class PostServiceTest {
     }
 
     @Test
+    @DisplayName("여행 기록 상세 조회 성공")
     void readPostDetailTest_success() {
         //given
         given(postRepository.findById(any())).willReturn(

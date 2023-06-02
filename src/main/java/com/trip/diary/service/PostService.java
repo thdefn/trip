@@ -6,6 +6,8 @@ import com.trip.diary.dto.CreatePostForm;
 import com.trip.diary.dto.PostDetailDto;
 import com.trip.diary.dto.UpdatePostForm;
 import com.trip.diary.event.dto.ImageDeleteEvent;
+import com.trip.diary.event.dto.LocationCreateEvent;
+import com.trip.diary.event.dto.LocationDeleteEvent;
 import com.trip.diary.exception.ErrorCode;
 import com.trip.diary.exception.LocationException;
 import com.trip.diary.exception.PostException;
@@ -46,7 +48,7 @@ public class PostService {
 
         validationMemberHaveWriteAuthority(trip, member);
 
-        Location location = getNewlyLocation(trip, form.getLocation());
+        Location location = getNewlyLocation(trip, form.getLocation().replace(" ",""));
         Post savedPost = postRepository.save(Post.of(form, location, trip, member));
         List<String> imagePaths = savePostImages(savedPost, images);
         updateLocationThumbnail(location, imagePaths.get(0));
@@ -58,6 +60,7 @@ public class PostService {
 
         if (optionalLocation.isEmpty() ||
                 !Objects.equals(optionalLocation.get().getName(), locationName)) {
+            applicationEventPublisher.publishEvent(new LocationCreateEvent(trip.getId(), locationName));
             return Location.builder()
                     .name(locationName)
                     .trip(trip)
@@ -119,6 +122,8 @@ public class PostService {
 
         if (post.getLocation().getPosts().size() == MINIMUM_SIZE_OF_LOCATION_POSTS) {
             locationRepository.delete(post.getLocation());
+            applicationEventPublisher.publishEvent(
+                    new LocationDeleteEvent(post.getTrip().getId(), post.getLocation().getName()));
         }
         postRepository.delete(post);
         postLikeRedisRepository.deleteAllByPostId(postId);
