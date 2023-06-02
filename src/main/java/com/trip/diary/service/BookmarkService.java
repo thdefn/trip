@@ -46,7 +46,7 @@ public class BookmarkService {
                 .findByMember(member, PageRequest.of(page, BOOKMARK_PAGE_SIZE));
         return new SliceImpl<>(bookmarkSlice.stream()
                 .filter(bookmark -> isMemberHaveReadAuthority(bookmark.getTrip(), member))
-                .map(bookmark -> TripDto.of(bookmark.getTrip()))
+                .map(TripDto::of)
                 .collect(Collectors.toList()), bookmarkSlice.getPageable(), bookmarkSlice.hasNext());
     }
 

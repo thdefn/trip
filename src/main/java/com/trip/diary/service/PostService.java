@@ -48,7 +48,7 @@ public class PostService {
 
         validationMemberHaveWriteAuthority(trip, member);
 
-        Location location = getNewlyLocation(trip, form.getLocation());
+        Location location = getNewlyLocation(trip, form.getLocation().replace(" ",""));
         Post savedPost = postRepository.save(Post.of(form, location, trip, member));
         List<String> imagePaths = savePostImages(savedPost, images);
         updateLocationThumbnail(location, imagePaths.get(0));

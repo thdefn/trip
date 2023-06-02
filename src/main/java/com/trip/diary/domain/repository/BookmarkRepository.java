@@ -15,4 +15,6 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
     Optional<Bookmark> findByTripAndMember(Trip trip, Member member);
 
     Slice<Bookmark> findByMember(Member member, Pageable pageable);
+
+    boolean existsByTrip_IdAndMember(Long tripId, Member member);
 }

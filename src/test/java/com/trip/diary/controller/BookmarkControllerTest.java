@@ -16,6 +16,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -73,7 +74,7 @@ class BookmarkControllerTest {
                                                 .nickname("냠냠")
                                                 .build()
                                 ))
-                                .locations(List.of("제주공항", "김포공항", "제주올레길"))
+                                .locations(Set.of("제주공항", "김포공항", "제주올레길"))
                                 .build()
                 )));
         //when
