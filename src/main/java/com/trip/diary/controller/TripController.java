@@ -1,8 +1,10 @@
 package com.trip.diary.controller;
 
-import com.trip.diary.dto.*;
+import com.trip.diary.dto.CreateTripDto;
+import com.trip.diary.dto.CreateTripForm;
+import com.trip.diary.dto.TripDto;
+import com.trip.diary.dto.UpdateTripForm;
 import com.trip.diary.security.MemberPrincipal;
-import com.trip.diary.service.MemberSearchService;
 import com.trip.diary.service.TripService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,11 @@ public class TripController {
     private ResponseEntity<TripDto> updateTrip(@PathVariable Long tripId,
                                                @Valid @RequestBody UpdateTripForm form,
                                                @AuthenticationPrincipal MemberPrincipal principal) {
-        return ResponseEntity.ok(tripService.updateTrip(tripId, form, principal.getMember()));
+        return ResponseEntity.ok(tripService.update(tripId, form, principal.getMember()));
+    }
+
+    @GetMapping
+    private ResponseEntity<List<TripDto>> readParticipatingTrip(@AuthenticationPrincipal MemberPrincipal principal) {
+        return ResponseEntity.ok(tripService.readParticipatingTrip(principal.getMember()));
     }
 }

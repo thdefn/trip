@@ -70,7 +70,7 @@ public class TripService {
     }
 
 
-    public TripDto updateTrip(Long tripId, UpdateTripForm form, Member member) {
+    public TripDto update(Long tripId, UpdateTripForm form, Member member) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new TripException(NOT_FOUND_TRIP));
 
@@ -81,5 +81,12 @@ public class TripService {
         trip.update(form);
         applicationEventPublisher.publishEvent(new TripUpdateEvent(trip));
         return TripDto.of(tripRepository.save(trip));
+    }
+
+    @Transactional
+    public List<TripDto> readParticipatingTrip(Member member) {
+        return participantRepository.findByMemberAndType(member, ACCEPTED)
+                .stream().map(participant -> TripDto.of(participant.getTrip()))
+                .collect(Collectors.toList());
     }
 }
