@@ -4,6 +4,7 @@ import com.trip.diary.client.ElasticSearchClient;
 import com.trip.diary.domain.model.Member;
 import com.trip.diary.domain.model.Trip;
 import com.trip.diary.domain.repository.BookmarkRepository;
+import com.trip.diary.domain.repository.LocationRepositoryCustom;
 import com.trip.diary.domain.repository.TripRepositoryCustom;
 import com.trip.diary.dto.TripBookmarkDto;
 import com.trip.diary.dto.TripDto;
@@ -33,6 +34,9 @@ import static org.mockito.Mockito.verify;
 class TripSearchServiceTest {
     @Mock
     private TripSearchRepository tripSearchRepository;
+
+    @Mock
+    private LocationRepositoryCustom locationRepositoryCustom;
 
     @Mock
     private BookmarkRepository bookmarkRepository;
@@ -237,6 +241,10 @@ class TripSearchServiceTest {
                 .willReturn(true);
         given(bookmarkRepository.existsByTrip_IdAndMember(2L, member))
                 .willReturn(false);
+        given(locationRepositoryCustom.findLocationNameByTripId(1L))
+                .willReturn(List.of("한라산", "제주공항"));
+        given(locationRepositoryCustom.findLocationNameByTripId(2L))
+                .willReturn(List.of("우도", "올레길"));
         //when
         Page<TripDto> result = tripSearchService.searchByKeywordOrderByBookmark(0, "제주도", member);
         //then

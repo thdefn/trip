@@ -1,6 +1,7 @@
 package com.trip.diary.service;
 
 import com.trip.diary.domain.constants.ParticipantType;
+import com.trip.diary.domain.model.Location;
 import com.trip.diary.domain.model.Member;
 import com.trip.diary.domain.model.Participant;
 import com.trip.diary.domain.model.Trip;
@@ -183,7 +184,7 @@ class TripServiceTest {
                         .leader(member)
                         .build());
         //when
-        TripDto result = tripService.updateTrip(1L, form, member);
+        TripDto result = tripService.update(1L, form, member);
         //then
         verify(tripRepository, times(1)).save(any());
         assertEquals("타이틀입니다", result.getTitle());
@@ -202,7 +203,7 @@ class TripServiceTest {
         given(tripRepository.findById(anyLong())).willReturn(Optional.empty());
         //when
         TripException exception = assertThrows(TripException.class,
-                () -> tripService.updateTrip(1L, form, member));
+                () -> tripService.update(1L, form, member));
         //then
         assertEquals(exception.getErrorCode(), ErrorCode.NOT_FOUND_TRIP);
     }
@@ -237,9 +238,90 @@ class TripServiceTest {
                 ));
         //when
         TripException exception = assertThrows(TripException.class,
-                () -> tripService.updateTrip(1L, form, member));
+                () -> tripService.update(1L, form, member));
         //then
         assertEquals(exception.getErrorCode(), ErrorCode.NOT_AUTHORITY_WRITE_TRIP);
+    }
+
+    @Test
+    @DisplayName("유저가 참여중인 여행 기록장 조회 성공")
+    void readParticipatingTripTest_success() {
+        //given
+        Trip trip = Trip.builder()
+                .id(1L)
+                .title("경주가최고")
+                .isPrivate(true)
+                .description("6월 2일 경주로 여행을 갑니다")
+                .leader(member)
+                .participants(List.of(
+                        Participant.builder()
+                                .id(1L)
+                                .type(ParticipantType.ACCEPTED)
+                                .member(member)
+                                .build()
+                ))
+                .locations(List.of(
+                        Location.builder()
+                                .id(3L)
+                                .name("첨성대")
+                                .build(),
+                        Location.builder()
+                                .id(4L)
+                                .name("경주월드")
+                                .build()
+                ))
+                .build();
+
+        Trip trip2 = Trip.builder()
+                .id(2L)
+                .title("그래도 제주도")
+                .isPrivate(true)
+                .description("아휴 제주도가 짱이다 바다도 보고 한라산가고")
+                .leader(member)
+                .participants(List.of(
+                        Participant.builder()
+                                .id(1L)
+                                .type(ParticipantType.ACCEPTED)
+                                .member(member)
+                                .build()
+                ))
+                .locations(List.of(
+                        Location.builder()
+                                .id(1L)
+                                .name("제주공항")
+                                .build(),
+                        Location.builder()
+                                .id(2L)
+                                .name("김포공항")
+                                .build()
+                ))
+                .build();
+
+        given(participantRepository.findByMemberAndType(any(), any()))
+                .willReturn(List.of(
+                        Participant.builder()
+                                .id(1L)
+                                .trip(trip)
+                                .member(member).build(),
+                        Participant.builder()
+                                .id(2L)
+                                .trip(trip2)
+                                .member(member).build()
+                ));
+        //when
+        List<TripDto> result = tripService.readParticipatingTrip(member);
+        //then
+        assertEquals(1L, result.get(0).getId());
+        assertEquals("경주가최고", result.get(0).getTitle());
+        assertEquals("6월 2일 경주로 여행을 갑니다", result.get(0).getDescription());
+        assertEquals(2, result.get(0).getLocations().size());
+        assertEquals(1, result.get(0).getParticipants().size());
+        assertEquals(2L, result.get(1).getId());
+        assertEquals("그래도 제주도", result.get(1).getTitle());
+        assertEquals("아휴 제주도가 짱이다 바다도 보고 한라산가고", result.get(1).getDescription());
+        assertEquals(2, result.get(1).getLocations().size());
+        assertEquals(1, result.get(1).getParticipants().size());
+
     }
 
 }
