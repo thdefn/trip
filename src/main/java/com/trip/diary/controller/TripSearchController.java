@@ -36,8 +36,8 @@ public class TripSearchController {
 
     @GetMapping("/bookmarks/search")
     private ResponseEntity<Page<TripDto>> searchByKeywordOrderByBookmark(@RequestParam int page,
-                                                          @RequestParam String keyword,
-                                                          @AuthenticationPrincipal MemberPrincipal principal) {
+                                                                         @RequestParam String keyword,
+                                                                         @AuthenticationPrincipal MemberPrincipal principal) {
         return ResponseEntity.ok(tripSearchService.searchByKeywordOrderByBookmark(page, keyword, principal.getMember()));
     }
 }

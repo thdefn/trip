@@ -35,8 +35,7 @@ public class TripRepositoryCustom {
                 .from(bookmark)
                 .leftJoin(bookmark.trip, trip)
                 .where(
-                        (tripDescriptionContains(keyword).or(triTitleContains(keyword)))
-                                .and(isTripPublic())
+                        isTripPublic().andAnyOf(tripDescriptionContains(keyword), triTitleContains(keyword))
                 )
                 .groupBy(trip.id)
                 .orderBy(aliasCount.desc())
@@ -47,8 +46,7 @@ public class TripRepositoryCustom {
         JPAQuery<Bookmark> countQuery = jpaQueryFactory.selectFrom(bookmark)
                 .leftJoin(bookmark.trip, trip)
                 .where(
-                        (tripDescriptionContains(keyword).or(triTitleContains(keyword)))
-                                .and(isTripPublic())
+                        isTripPublic().andAnyOf(tripDescriptionContains(keyword), triTitleContains(keyword))
                 );
 
         return PageableExecutionUtils.getPage(content, pageable, () -> countQuery.fetch().size());
@@ -65,7 +63,7 @@ public class TripRepositoryCustom {
     }
 
     private BooleanExpression isTripPublic() {
-        return trip.isPrivate.eq(false);
+        return trip.isPrivate.isFalse();
     }
 
 

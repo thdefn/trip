@@ -27,7 +27,6 @@ public class TripDto {
     private Boolean isBookmarked;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<ParticipantDto> participants;
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private Set<String> locations;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long countOfBookmark;
@@ -70,13 +69,14 @@ public class TripDto {
                 .build();
     }
 
-    public static TripDto of(TripBookmarkDto dto, boolean isBookmarked){
+    public static TripDto of(TripBookmarkDto dto, List<String> locations, boolean isBookmarked) {
         return TripDto.builder()
                 .id(dto.getTripId())
                 .title(dto.getTitle())
                 .description(dto.getDescription())
                 .isBookmarked(isBookmarked)
                 .countOfBookmark(dto.getCountOfBookmarked())
+                .locations(Set.copyOf(locations))
                 .build();
     }
 }
