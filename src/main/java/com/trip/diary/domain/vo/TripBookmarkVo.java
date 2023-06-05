@@ -1,4 +1,4 @@
-package com.trip.diary.dto;
+package com.trip.diary.domain.vo;
 
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Builder;
@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class TripBookmarkDto {
+public class TripBookmarkVo {
     private Long tripId;
     private boolean isPrivate;
     private String title;
@@ -14,7 +14,7 @@ public class TripBookmarkDto {
     private Long countOfBookmarked;
 
     @QueryProjection
-    public TripBookmarkDto(Long tripId, boolean isPrivate, String title, String description, Long countOfBookmarked) {
+    public TripBookmarkVo(Long tripId, boolean isPrivate, String title, String description, Long countOfBookmarked) {
         this.tripId = tripId;
         this.isPrivate = isPrivate;
         this.title = title;

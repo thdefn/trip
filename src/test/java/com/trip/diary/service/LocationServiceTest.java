@@ -28,9 +28,6 @@ import static org.mockito.BDDMockito.given;
 @ExtendWith(MockitoExtension.class)
 class LocationServiceTest {
     @Mock
-    private LocationRepository locationRepository;
-
-    @Mock
     private ParticipantRepository participantRepository;
 
     @Mock
@@ -81,52 +78,105 @@ class LocationServiceTest {
                             .type(ParticipantType.ACCEPTED)
                             .build()
             ))
+            .locations(List.of(Location.builder()
+                    .id(1L)
+                    .name("제주공항")
+                    .thumbnailPath("/posts/1.jpg")
+                    .posts(List.of(
+                            Post.builder()
+                                    .id(1L)
+                                    .content("제주공항에서 본 고양이 짱귀엽다")
+                                    .member(participant1)
+                                    .images(
+                                            List.of(PostImage.builder()
+                                                    .id(1L)
+                                                    .imagePath("/posts/1.jpg")
+                                                    .build()
+                                            )
+                                    )
+                                    .build(),
+                            Post.builder()
+                                    .id(2L)
+                                    .content("제주도 첫끼니는 버거킹..ㅋ")
+                                    .member(participant1)
+                                    .images(
+                                            List.of(PostImage.builder()
+                                                            .id(2L)
+                                                            .imagePath("/posts/2.jpg")
+                                                            .build(),
+                                                    PostImage.builder()
+                                                            .id(2L)
+                                                            .imagePath("/posts/3.jpg")
+                                                            .build()
+                                            )
+                                    )
+                                    .build()
+                    ))
+                    .build()))
             .build();
 
     @Test
     @DisplayName("로케이션 상세 리스트 읽기 성공")
     void readLocationDetailsTest_success() {
         //given
+        Trip trip = Trip.builder()
+                .id(1L)
+                .title("임의의 타이틀")
+                .isPrivate(true)
+                .description("임의의 설명")
+                .leader(member)
+                .participants(List.of(
+                        Participant.builder()
+                                .member(member)
+                                .type(ParticipantType.ACCEPTED)
+                                .build(),
+                        Participant.builder()
+                                .member(participant1)
+                                .type(ParticipantType.ACCEPTED)
+                                .build(),
+                        Participant.builder()
+                                .member(participant2)
+                                .type(ParticipantType.ACCEPTED)
+                                .build()
+                ))
+                .locations(List.of(Location.builder()
+                        .id(1L)
+                        .name("제주공항")
+                        .thumbnailPath("/posts/1.jpg")
+                        .posts(List.of(
+                                Post.builder()
+                                        .id(1L)
+                                        .content("제주공항에서 본 고양이 짱귀엽다")
+                                        .member(participant1)
+                                        .images(
+                                                List.of(PostImage.builder()
+                                                        .id(1L)
+                                                        .imagePath("/posts/1.jpg")
+                                                        .build()
+                                                )
+                                        )
+                                        .build(),
+                                Post.builder()
+                                        .id(2L)
+                                        .content("제주도 첫끼니는 버거킹..ㅋ")
+                                        .member(participant1)
+                                        .images(
+                                                List.of(PostImage.builder()
+                                                                .id(2L)
+                                                                .imagePath("/posts/2.jpg")
+                                                                .build(),
+                                                        PostImage.builder()
+                                                                .id(2L)
+                                                                .imagePath("/posts/3.jpg")
+                                                                .build()
+                                                )
+                                        )
+                                        .build()
+                        ))
+                        .build()))
+                .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
         given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
-        given(locationRepository.findByTripOrderByIdDesc(trip))
-                .willReturn(List.of(
-                        Location.builder()
-                                .id(1L)
-                                .name("제주공항")
-                                .thumbnailPath("/posts/1.jpg")
-                                .posts(List.of(
-                                        Post.builder()
-                                                .id(1L)
-                                                .content("제주공항에서 본 고양이 짱귀엽다")
-                                                .member(participant1)
-                                                .images(
-                                                        List.of(PostImage.builder()
-                                                                .id(1L)
-                                                                .imagePath("/posts/1.jpg")
-                                                                .build()
-                                                        )
-                                                )
-                                                .build(),
-                                        Post.builder()
-                                                .id(2L)
-                                                .content("제주도 첫끼니는 버거킹..ㅋ")
-                                                .member(participant1)
-                                                .images(
-                                                        List.of(PostImage.builder()
-                                                                        .id(2L)
-                                                                        .imagePath("/posts/2.jpg")
-                                                                        .build(),
-                                                                PostImage.builder()
-                                                                        .id(2L)
-                                                                        .imagePath("/posts/3.jpg")
-                                                                        .build()
-                                                        )
-                                                )
-                                                .build()
-                                ))
-                                .build()
-                ));
         //when
         List<LocationDetailDto> result = locationService.readLocationDetails(1L, member);
         //then
@@ -187,46 +237,64 @@ class LocationServiceTest {
     @DisplayName("로케이션 리스트 읽기 성공")
     void readLocationsTest_success() {
         //given
+        Trip trip = Trip.builder()
+                .id(1L)
+                .title("임의의 타이틀")
+                .isPrivate(true)
+                .description("임의의 설명")
+                .leader(member)
+                .participants(List.of(
+                        Participant.builder()
+                                .member(member)
+                                .type(ParticipantType.ACCEPTED)
+                                .build(),
+                        Participant.builder()
+                                .member(participant1)
+                                .type(ParticipantType.ACCEPTED)
+                                .build(),
+                        Participant.builder()
+                                .member(participant2)
+                                .type(ParticipantType.ACCEPTED)
+                                .build()
+                ))
+                .locations(List.of(Location.builder()
+                        .id(1L)
+                        .name("제주공항")
+                        .thumbnailPath("/posts/1.jpg")
+                        .posts(List.of(
+                                Post.builder()
+                                        .id(1L)
+                                        .content("제주공항에서 본 고양이 짱귀엽다")
+                                        .member(participant1)
+                                        .images(
+                                                List.of(PostImage.builder()
+                                                        .id(1L)
+                                                        .imagePath("/posts/1.jpg")
+                                                        .build()
+                                                )
+                                        )
+                                        .build(),
+                                Post.builder()
+                                        .id(2L)
+                                        .content("제주도 첫끼니는 버거킹..ㅋ")
+                                        .member(participant1)
+                                        .images(
+                                                List.of(PostImage.builder()
+                                                                .id(2L)
+                                                                .imagePath("/posts/2.jpg")
+                                                                .build(),
+                                                        PostImage.builder()
+                                                                .id(2L)
+                                                                .imagePath("/posts/3.jpg")
+                                                                .build()
+                                                )
+                                        )
+                                        .build()
+                        ))
+                        .build()))
+                .build();
         given(tripRepository.findById(anyLong())).willReturn(Optional.of(trip));
         given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
-        given(locationRepository.findByTripOrderByIdDesc(trip))
-                .willReturn(List.of(
-                        Location.builder()
-                                .id(1L)
-                                .name("제주공항")
-                                .thumbnailPath("/posts/1.jpg")
-                                .posts(List.of(
-                                        Post.builder()
-                                                .id(1L)
-                                                .content("제주공항에서 본 고양이 짱귀엽다")
-                                                .member(participant1)
-                                                .images(
-                                                        List.of(PostImage.builder()
-                                                                .id(1L)
-                                                                .imagePath("/posts/1.jpg")
-                                                                .build()
-                                                        )
-                                                )
-                                                .build(),
-                                        Post.builder()
-                                                .id(2L)
-                                                .content("제주도 첫끼니는 버거킹..ㅋ")
-                                                .member(participant1)
-                                                .images(
-                                                        List.of(PostImage.builder()
-                                                                        .id(2L)
-                                                                        .imagePath("/posts/2.jpg")
-                                                                        .build(),
-                                                                PostImage.builder()
-                                                                        .id(2L)
-                                                                        .imagePath("/posts/3.jpg")
-                                                                        .build()
-                                                        )
-                                                )
-                                                .build()
-                                ))
-                                .build()
-                ));
         //when
         List<LocationDto> result = locationService.readLocations(1L, member);
         //then

@@ -6,7 +6,7 @@ import com.trip.diary.domain.model.Trip;
 import com.trip.diary.domain.repository.BookmarkRepository;
 import com.trip.diary.domain.repository.LocationRepositoryCustom;
 import com.trip.diary.domain.repository.TripRepositoryCustom;
-import com.trip.diary.dto.TripBookmarkDto;
+import com.trip.diary.domain.vo.TripBookmarkVo;
 import com.trip.diary.dto.TripDto;
 import com.trip.diary.elasticsearch.model.TripDocument;
 import com.trip.diary.elasticsearch.repository.TripSearchRepository;
@@ -221,14 +221,14 @@ class TripSearchServiceTest {
         given(tripRepositoryCustom.findByKeywordContainsOrderByBookmark(anyString(), any()))
                 .willReturn(new PageImpl<>(
                         List.of(
-                                TripBookmarkDto.builder()
+                                TripBookmarkVo.builder()
                                         .tripId(1L)
                                         .title("제주도")
                                         .isPrivate(false)
                                         .description("제주도입니닷")
                                         .countOfBookmarked(3L)
                                         .build(),
-                                TripBookmarkDto.builder()
+                                TripBookmarkVo.builder()
                                         .tripId(2L)
                                         .title("제주도 여행기")
                                         .isPrivate(false)
