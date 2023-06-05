@@ -2,7 +2,6 @@ package com.trip.diary.service;
 
 import com.trip.diary.domain.model.Member;
 import com.trip.diary.domain.model.Trip;
-import com.trip.diary.domain.repository.LocationRepository;
 import com.trip.diary.domain.repository.ParticipantRepository;
 import com.trip.diary.domain.repository.TripRepository;
 import com.trip.diary.dto.LocationDetailDto;
@@ -23,9 +22,7 @@ import static com.trip.diary.exception.ErrorCode.NOT_AUTHORITY_READ_TRIP;
 @AllArgsConstructor
 public class LocationService {
     private final TripRepository tripRepository;
-
     private final ParticipantRepository participantRepository;
-    private final LocationRepository locationRepository;
 
     @Transactional
     public List<LocationDetailDto> readLocationDetails(Long tripId, Member member) {
@@ -34,8 +31,8 @@ public class LocationService {
 
         validationMemberHaveReadAuthority(trip, member);
 
-        return locationRepository.findByTripOrderByIdDesc(trip)
-                .stream().map(LocationDetailDto::of).collect(Collectors.toList());
+        return trip.getLocations().stream()
+                .map(LocationDetailDto::of).collect(Collectors.toList());
     }
 
     @Transactional
@@ -45,8 +42,8 @@ public class LocationService {
 
         validationMemberHaveReadAuthority(trip, member);
 
-        return locationRepository.findByTripOrderByIdDesc(trip)
-                .stream().map(LocationDto::of).collect(Collectors.toList());
+        return trip.getLocations().stream()
+                .map(LocationDto::of).collect(Collectors.toList());
     }
 
     private void validationMemberHaveReadAuthority(Trip trip, Member member) {
