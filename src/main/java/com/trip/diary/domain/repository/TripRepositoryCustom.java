@@ -7,7 +7,7 @@ import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.trip.diary.domain.model.Bookmark;
-import com.trip.diary.dto.TripBookmarkDto;
+import com.trip.diary.domain.vo.TripBookmarkVo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,10 +25,10 @@ import static org.springframework.util.StringUtils.hasText;
 public class TripRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
-    public Page<TripBookmarkDto> findByKeywordContainsOrderByBookmark(String keyword, Pageable pageable) {
+    public Page<TripBookmarkVo> findByKeywordContainsOrderByBookmark(String keyword, Pageable pageable) {
         NumberPath<Long> aliasCount = Expressions.numberPath(Long.class, "countOfBookmarked");
-        List<TripBookmarkDto> content = jpaQueryFactory.select(
-                        Projections.constructor(TripBookmarkDto.class,
+        List<TripBookmarkVo> content = jpaQueryFactory.select(
+                        Projections.constructor(TripBookmarkVo.class,
                                 trip.id, trip.isPrivate,
                                 trip.title, trip.description,
                                 trip.id.count().as(aliasCount)))

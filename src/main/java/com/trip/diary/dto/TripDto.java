@@ -5,6 +5,7 @@ import com.trip.diary.domain.constants.ParticipantType;
 import com.trip.diary.domain.model.Bookmark;
 import com.trip.diary.domain.model.Location;
 import com.trip.diary.domain.model.Trip;
+import com.trip.diary.domain.vo.TripBookmarkVo;
 import com.trip.diary.elasticsearch.model.TripDocument;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -69,13 +70,13 @@ public class TripDto {
                 .build();
     }
 
-    public static TripDto of(TripBookmarkDto dto, List<String> locations, boolean isBookmarked) {
+    public static TripDto of(TripBookmarkVo vo, List<String> locations, boolean isBookmarked) {
         return TripDto.builder()
-                .id(dto.getTripId())
-                .title(dto.getTitle())
-                .description(dto.getDescription())
+                .id(vo.getTripId())
+                .title(vo.getTitle())
+                .description(vo.getDescription())
                 .isBookmarked(isBookmarked)
-                .countOfBookmark(dto.getCountOfBookmarked())
+                .countOfBookmark(vo.getCountOfBookmarked())
                 .locations(Set.copyOf(locations))
                 .build();
     }
