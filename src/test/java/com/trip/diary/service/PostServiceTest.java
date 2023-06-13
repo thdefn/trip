@@ -23,6 +23,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -139,6 +140,7 @@ class PostServiceTest {
                         .content("제주도 도착입니당")
                         .location(location)
                         .member(member)
+                        .createdAt(LocalDateTime.now())
                         .build());
         given(imageManager.uploadImages(any(), anyString()))
                 .willReturn(List.of("/post/1.jpg",
@@ -186,6 +188,7 @@ class PostServiceTest {
                         .content("제주도 도착입니당")
                         .location(location)
                         .member(member)
+                        .createdAt(LocalDateTime.now())
                         .build());
         given(imageManager.uploadImages(any(), anyString()))
                 .willReturn(List.of("/post/1.jpg",
@@ -228,6 +231,7 @@ class PostServiceTest {
                         .content("제주도 도착입니당")
                         .location(location)
                         .member(member)
+                        .createdAt(LocalDateTime.now())
                         .build());
         given(imageManager.uploadImages(any(), anyString()))
                 .willReturn(List.of("/post/1.jpg",
@@ -340,6 +344,7 @@ class PostServiceTest {
                         .content("제주도 도착입니당")
                         .location(location)
                         .member(member)
+                        .createdAt(LocalDateTime.now())
                         .build());
 
         given(postLikeRedisRepository.existsByPostIdAndUserId(anyLong(), anyLong()))
@@ -651,6 +656,7 @@ class PostServiceTest {
                                                 .id(1L)
                                                 .content("제주공항에서 본 고양이 짱귀엽다")
                                                 .location(Location.builder().id(1L).name("제주공항").build())
+                                                .createdAt(LocalDateTime.now())
                                                 .member(member)
                                                 .images(
                                                         List.of(PostImage.builder()
@@ -665,6 +671,7 @@ class PostServiceTest {
                                                 .content("제주도 첫끼니는 버거킹..ㅋ")
                                                 .member(participant1)
                                                 .location(Location.builder().id(1L).name("제주공항").build())
+                                                .createdAt(LocalDateTime.now())
                                                 .images(
                                                         List.of(PostImage.builder()
                                                                         .id(2L)
@@ -783,6 +790,7 @@ class PostServiceTest {
                 Optional.of(Post.builder()
                         .id(1L)
                         .content("제주도 도착입니당")
+                        .createdAt(LocalDateTime.now())
                         .trip(trip)
                         .member(member)
                         .location(Location.builder()
