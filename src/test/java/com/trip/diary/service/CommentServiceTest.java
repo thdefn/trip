@@ -19,6 +19,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -98,6 +99,7 @@ class CommentServiceTest {
                         .id(1L)
                         .member(member)
                         .content("댓글")
+                        .createdAt(LocalDateTime.now())
                         .build());
         //when
         CommentDto result = commentService.create(1L, form, member);
@@ -165,6 +167,7 @@ class CommentServiceTest {
                         .parentComment(comment)
                         .member(member)
                         .content("댓글")
+                        .createdAt(LocalDateTime.now())
                         .build());
         //when
         CommentDto result = commentService.update(1L, form, member);
@@ -239,6 +242,7 @@ class CommentServiceTest {
                         .parentComment(comment)
                         .member(member)
                         .content("댓글")
+                        .createdAt(LocalDateTime.now())
                         .build());
         //when
         CommentDto result = commentService.reComment(1L, form, member);
@@ -278,6 +282,7 @@ class CommentServiceTest {
                 .content("제주도 도착입니당")
                 .member(member)
                 .post(post)
+                .createdAt(LocalDateTime.now())
                 .build();
 
         given(commentRepository.findByIdAndDeletedAtIsNull(anyLong()))
@@ -307,6 +312,7 @@ class CommentServiceTest {
                         .id(1L)
                         .content("이곳은 제주도")
                         .member(participant1)
+                        .createdAt(LocalDateTime.now())
                         .build()
                 )
                 .post(post)
@@ -342,12 +348,14 @@ class CommentServiceTest {
                                                         .content("저 너무 설레는데 어쩌죠 ?")
                                                         .member(participant1)
                                                         .post(post)
+                                                        .createdAt(LocalDateTime.now())
                                                         .build(),
                                                 Comment.builder()
                                                         .id(3L)
                                                         .content("어디야 너ㅡㅡ")
                                                         .member(member)
                                                         .post(post)
+                                                        .createdAt(LocalDateTime.now())
                                                         .build()
                                         ))
                                 .build(),
@@ -356,6 +364,7 @@ class CommentServiceTest {
                                 .content("키킷,,, 나도 지금가는중임..")
                                 .reComments(new ArrayList<>())
                                 .member(participant1)
+                                .createdAt(LocalDateTime.now())
                                 .post(post)
                                 .build()
                 ));
@@ -443,12 +452,14 @@ class CommentServiceTest {
                                                         .content("저 너무 설레는데 어쩌죠 ?")
                                                         .member(participant1)
                                                         .post(post)
+                                                        .createdAt(LocalDateTime.now())
                                                         .build(),
                                                 Comment.builder()
                                                         .id(3L)
                                                         .content("어디야 너ㅡㅡ")
                                                         .member(member)
                                                         .post(post)
+                                                        .createdAt(LocalDateTime.now())
                                                         .build()
                                         ))
                                 .build()));
@@ -484,6 +495,7 @@ class CommentServiceTest {
                                 .member(participant1)
                                 .post(post)
                                 .reComments(new ArrayList<>())
+                                .createdAt(LocalDateTime.now())
                                 .build()));
         //when
         CommentException exception = assertThrows(CommentException.class, () -> commentService.delete(1L, member));
@@ -503,6 +515,7 @@ class CommentServiceTest {
                                 .member(participant1)
                                 .post(post)
                                 .reComments(new ArrayList<>())
+                                .createdAt(LocalDateTime.now())
                                 .build()));
         given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
         given(commentLikeRedisRepository.existsByCommentIdAndUserId(anyLong(), anyLong()))
@@ -525,6 +538,7 @@ class CommentServiceTest {
                                 .member(participant1)
                                 .post(post)
                                 .reComments(new ArrayList<>())
+                                .createdAt(LocalDateTime.now())
                                 .build()));
         given(participantRepository.existsByTripAndMemberAndType(any(), any(), any())).willReturn(true);
         given(commentLikeRedisRepository.existsByCommentIdAndUserId(anyLong(), anyLong()))
@@ -559,6 +573,7 @@ class CommentServiceTest {
                                 .member(participant1)
                                 .post(post)
                                 .reComments(new ArrayList<>())
+                                .createdAt(LocalDateTime.now())
                                 .build()));
         given(participantRepository.existsByTripAndMemberAndType(any(), any(), any()))
                 .willReturn(false);

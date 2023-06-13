@@ -22,6 +22,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,6 +66,7 @@ class TripServiceTest {
             .title("임의의 타이틀")
             .isPrivate(true)
             .description("임의의 설명")
+            .createdAt(LocalDateTime.now())
             .leader(member)
             .build();
 
@@ -181,6 +183,7 @@ class TripServiceTest {
                                         .trip(trip).member(member).build()
                         ))
                         .locations(new ArrayList<>())
+                        .createdAt(LocalDateTime.now())
                         .leader(member)
                         .build());
         //when
@@ -233,6 +236,7 @@ class TripServiceTest {
                                 .title("타이틀입니다")
                                 .isPrivate(true)
                                 .description("설명입니다")
+                                .createdAt(LocalDateTime.now())
                                 .leader(leader)
                                 .build()
                 ));
@@ -253,6 +257,7 @@ class TripServiceTest {
                 .isPrivate(true)
                 .description("6월 2일 경주로 여행을 갑니다")
                 .leader(member)
+                .createdAt(LocalDateTime.now())
                 .participants(List.of(
                         Participant.builder()
                                 .id(1L)
@@ -278,6 +283,7 @@ class TripServiceTest {
                 .isPrivate(true)
                 .description("아휴 제주도가 짱이다 바다도 보고 한라산가고")
                 .leader(member)
+                .createdAt(LocalDateTime.now())
                 .participants(List.of(
                         Participant.builder()
                                 .id(1L)

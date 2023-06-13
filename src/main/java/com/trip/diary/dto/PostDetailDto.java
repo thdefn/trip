@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,9 +27,10 @@ public class PostDetailDto {
     private String authorProfilePath;
     private Boolean isReader;
     private Boolean isReaderLiked;
+    private LocalDate createdAt;
 
     public static PostDetailDto of(Post post, List<String> imagePaths, Long readerId) {
-        boolean isReader = readerId.equals(post.getMember().getId());
+        boolean isReader = post.getMember().isReader(readerId);
         return PostDetailDto.builder()
                 .id(post.getId())
                 .content(post.getContent())
@@ -40,13 +42,14 @@ public class PostDetailDto {
                         : post.getMember().getNickname())
                 .authorProfilePath(post.getMember().getProfilePath())
                 .isReader(isReader)
+                .createdAt(post.getCreatedAt().toLocalDate())
                 .build();
     }
 
     public static PostDetailDto of(Post post, List<String> imagePaths,
                                    long countOfLikes, boolean isReaderLiked,
                                    Long readerId) {
-        boolean isReader = readerId.equals(post.getMember().getId());
+        boolean isReader = post.getMember().isReader(readerId);
         return PostDetailDto.builder()
                 .id(post.getId())
                 .content(post.getContent())
@@ -60,12 +63,13 @@ public class PostDetailDto {
                 .authorProfilePath(post.getMember().getProfilePath())
                 .isReader(isReader)
                 .isReaderLiked(isReaderLiked)
+                .createdAt(post.getCreatedAt().toLocalDate())
                 .build();
     }
 
     public static PostDetailDto of(Post post, long countOfLikes,
                                    boolean isReaderLiked, Long readerId) {
-        boolean isReader = readerId.equals(post.getMember().getId());
+        boolean isReader = post.getMember().isReader(readerId);
         return PostDetailDto.builder()
                 .id(post.getId())
                 .content(post.getContent())
@@ -81,6 +85,7 @@ public class PostDetailDto {
                 .authorProfilePath(post.getMember().getProfilePath())
                 .isReader(isReader)
                 .isReaderLiked(isReaderLiked)
+                .createdAt(post.getCreatedAt().toLocalDate())
                 .build();
     }
 }
