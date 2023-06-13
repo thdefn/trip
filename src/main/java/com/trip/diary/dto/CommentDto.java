@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @AllArgsConstructor
@@ -26,6 +27,7 @@ public class CommentDto {
     private String authorProfilePath;
     private Boolean isReader;
     private Boolean isReaderLiked;
+    private LocalDate createdAt;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private List<CommentDto> reComments;
 
@@ -37,6 +39,7 @@ public class CommentDto {
                 .authorNickname(comment.getMember().getNickname())
                 .authorProfilePath(comment.getMember().getProfilePath())
                 .isReader(true)
+                .createdAt(comment.getCreatedAt().toLocalDate())
                 .build();
     }
 
@@ -50,6 +53,7 @@ public class CommentDto {
                 .authorProfilePath(comment.getMember().getProfilePath())
                 .isReader(comment.getMember().isReader(readerId))
                 .isReaderLiked(isReaderLiked)
+                .createdAt(comment.getCreatedAt().toLocalDate())
                 .build();
     }
 
@@ -66,6 +70,7 @@ public class CommentDto {
                 .authorProfilePath(comment.getMember().getProfilePath())
                 .isReader(comment.getMember().isReader(readerId))
                 .isReaderLiked(isReaderLiked)
+                .createdAt(comment.getCreatedAt().toLocalDate())
                 .build();
     }
 

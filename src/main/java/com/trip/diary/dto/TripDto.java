@@ -7,6 +7,7 @@ import com.trip.diary.domain.model.Location;
 import com.trip.diary.domain.model.Trip;
 import com.trip.diary.domain.vo.TripBookmarkVo;
 import com.trip.diary.elasticsearch.model.TripDocument;
+import com.trip.diary.util.TimeUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,6 +32,8 @@ public class TripDto {
     private Set<String> locations;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long countOfBookmark;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String createdAt;
 
     public static TripDto of(Trip trip) {
         return TripDto.builder()
@@ -44,6 +47,7 @@ public class TripDto {
                         .collect(Collectors.toList()))
                 .locations(trip.getLocations().stream()
                         .map(Location::getName).collect(Collectors.toSet()))
+                .createdAt(TimeUtil.parseDate(trip.getCreatedAt()))
                 .build();
     }
 
@@ -55,6 +59,7 @@ public class TripDto {
                 .isBookmarked(true)
                 .locations(bookmark.getTrip().getLocations().stream()
                         .map(Location::getName).collect(Collectors.toSet()))
+                .createdAt(TimeUtil.parseDate(bookmark.getTrip().getCreatedAt()))
                 .build();
     }
 
