@@ -21,7 +21,7 @@ public interface TripSearchRepository extends ElasticsearchRepository<TripDocume
     Page<TripDocument> findByKeyword(String keyword, String locationName, Pageable pageable);
 
     @Query("{\"bool\": { \"must\": [ \n" +
-            "    {\"term\": {\"locations.name\": \"김포공항\"}}],\n" +
+            "    {\"term\": {\"locations.name\": \"?0\"}}],\n" +
             "    \"filter\": [{\"term\": {\"isPrivate\": false}}]}}")
     Page<TripDocument> findByLocationsName(String locationName, Pageable pageable);
 }
